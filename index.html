@@ -1,0 +1,3544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Shooting Pool — World Firearms Billiards Championship</title>
+  <style>
+    /* =========================================================================
+       CSS RESET & BROADCAST ARENA STYLING
+       ========================================================================= */
+    :root {
+      --bg-dark: #0d131a;
+      --bg-panel: #16202b;
+      --bg-panel-alt: #1e2c3a;
+      --border-subtle: #2c4054;
+      --accent-gold: #f0b429;
+      --accent-green: #2ecc71;
+      --accent-blue: #3498db;
+      --accent-red: #e74c3c;
+      --text-main: #ecf0f1;
+      --text-muted: #95a5a6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, #182432 0%, #090d12 100%);
+      color: var(--text-main);
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Broadcast HUD Bar */
+    .hud-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 16px;
+      background: rgba(16, 24, 34, 0.95);
+      border-bottom: 1px solid var(--border-subtle);
+      gap: 12px;
+      flex-wrap: wrap;
+      z-index: 10;
+    }
+
+    .brand-block {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, #d35400, #f39c12);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.72rem;
+      padding: 3px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    .brand-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: none;
+    }
+
+    @media (min-width: 768px) {
+      .brand-subtitle {
+        display: inline;
+      }
+    }
+
+    /* Scoreboard / Turn status */
+    .scoreboard {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--bg-panel);
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .player-card {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      transition: background 0.2s, border-color 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .player-card.active {
+      background: rgba(240, 180, 41, 0.16);
+      border-color: var(--accent-gold);
+    }
+
+    .player-name {
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .player-score {
+      background: #0d131a;
+      color: var(--accent-gold);
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      min-width: 26px;
+      text-align: center;
+    }
+
+    .player-group-tag {
+      font-size: 0.7rem;
+      padding: 1px 5px;
+      border-radius: 3px;
+      background: #253545;
+      color: #cbd5e1;
+      text-transform: uppercase;
+    }
+
+    .vs-divider {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    /* Mode & Utility Controls */
+    .hud-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn {
+      background: var(--bg-panel-alt);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      padding: 6px 12px;
+      border-radius: 5px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: #293c4f;
+      border-color: #486581;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      color: #111827;
+      border-color: #fbbf24;
+      font-weight: 800;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      border-color: #fde68a;
+    }
+
+    select.mode-select {
+      background: var(--bg-panel-alt);
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      padding: 6px 10px;
+      border-radius: 5px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Main Arena Container */
+    .arena-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 8px 14px;
+      overflow: hidden;
+    }
+
+    .canvas-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    canvas#poolCanvas {
+      display: block;
+      border-radius: 12px;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.75), 0 0 0 2px #263545;
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    /* Bottom Equipment & Shot Control Bar */
+    .hud-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      background: rgba(16, 24, 34, 0.96);
+      border-top: 1px solid var(--border-subtle);
+      gap: 14px;
+      flex-wrap: wrap;
+      z-index: 10;
+    }
+
+    /* Current Stick Box */
+    .stick-panel {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--bg-panel);
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .stick-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stick-label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .stick-current-name {
+      font-size: 0.96rem;
+      font-weight: 800;
+      color: var(--accent-gold);
+    }
+
+    .stick-mini-stats {
+      display: flex;
+      gap: 8px;
+      font-size: 0.72rem;
+      color: #cbd5e1;
+    }
+
+    /* Shot Power & Status Indicator */
+    .power-panel {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      max-width: 360px;
+      min-width: 200px;
+      background: var(--bg-panel);
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .power-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .power-bar-outer {
+      flex: 1;
+      height: 14px;
+      background: #0b1016;
+      border-radius: 7px;
+      overflow: hidden;
+      border: 1px solid #2b3d4f;
+      position: relative;
+    }
+
+    .power-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #2ecc71 0%, #f1c40f 60%, #e74c3c 100%);
+      transition: width 0.04s linear;
+    }
+
+    .power-value {
+      font-size: 0.82rem;
+      font-weight: 800;
+      min-width: 38px;
+      text-align: right;
+      color: #fff;
+    }
+
+    /* Broadcast Commentary Box */
+    .commentary-panel {
+      flex: 1.2;
+      min-width: 250px;
+      background: linear-gradient(90deg, rgba(22, 32, 43, 0.95), rgba(30, 44, 58, 0.95));
+      border-left: 4px solid var(--accent-gold);
+      padding: 7px 12px;
+      border-radius: 4px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .commentary-tag {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-gold);
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      background: #e74c3c;
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulseDot 1.6s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .commentary-text {
+      font-size: 0.88rem;
+      font-style: italic;
+      color: #f8fafc;
+      line-height: 1.3;
+    }
+
+    /* =========================================================================
+       MODAL OVERLAYS (CHANGE STICK MENU & WINNER SCREEN)
+       ========================================================================= */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 10, 15, 0.82);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      background: var(--bg-panel);
+      border: 1px solid #3b536b;
+      border-radius: 10px;
+      max-width: 680px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Weapon Selection Locker Card Modal */
+    #stickModal .modal-card {
+      max-width: 1060px;
+      width: 96vw;
+      max-height: 94vh;
+    }
+
+    .modal-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .modal-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modal-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #fff;
+    }
+
+    .modal-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .modal-body {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Explainer / Legend Bar on Stick Selection Screen */
+    .stick-legend-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px 18px;
+      padding: 9px 20px;
+      background: rgba(13, 19, 26, 0.72);
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.77rem;
+      color: #cbd5e1;
+    }
+
+    .stick-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .stick-legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .stick-legend-item strong {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    /* Grid Layout for Weapon Cards (4 columns x 2 rows on desktop) */
+    #weaponListContainer {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 14px 18px 16px;
+    }
+
+    @media (max-width: 900px) {
+      #weaponListContainer {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 520px) {
+      #weaponListContainer {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Compact Weapon Selection Cards */
+    .weapon-option {
+      background: var(--bg-panel-alt);
+      border: 2px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 7px;
+      min-height: 158px;
+    }
+
+    .weapon-option:hover {
+      border-color: #7090b0;
+      background: #243647;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+    }
+
+    .weapon-option.selected {
+      border-color: var(--accent-gold);
+      background: rgba(240, 180, 41, 0.13);
+      box-shadow: 0 0 14px rgba(240, 180, 41, 0.28);
+    }
+
+    .weapon-top-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .weapon-name-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .weapon-name {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+
+    .weapon-badges-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .weapon-badge {
+      font-size: 0.62rem;
+      padding: 2px 5px;
+      border-radius: 3px;
+      background: #0d141e;
+      color: var(--accent-gold);
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .difficulty-badge {
+      font-size: 0.62rem;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
+
+    .diff-easy {
+      background: rgba(46, 204, 113, 0.16);
+      color: #4ade80;
+      border: 1px solid rgba(46, 204, 113, 0.35);
+    }
+
+    .diff-medium {
+      background: rgba(52, 152, 219, 0.16);
+      color: #60a5fa;
+      border: 1px solid rgba(52, 152, 219, 0.35);
+    }
+
+    .diff-hard {
+      background: rgba(243, 156, 18, 0.18);
+      color: #fbbf24;
+      border: 1px solid rgba(243, 156, 18, 0.38);
+    }
+
+    .diff-expert {
+      background: rgba(231, 76, 60, 0.18);
+      color: #f87171;
+      border: 1px solid rgba(231, 76, 60, 0.4);
+    }
+
+    .weapon-equipped-tag {
+      color: var(--accent-gold);
+      background: rgba(240, 180, 41, 0.16);
+      border: 1px solid rgba(240, 180, 41, 0.4);
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .weapon-desc {
+      font-size: 0.73rem;
+      color: #cbd5e1;
+      line-height: 1.3;
+      flex: 1;
+      margin: 1px 0;
+    }
+
+    /* Help Screen Pop-Up Modal Styling */
+    #stickHelpModal .modal-card {
+      max-width: 860px;
+      width: 94vw;
+      max-height: 88vh;
+    }
+
+    .help-guide-intro {
+      background: rgba(13, 19, 26, 0.65);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      line-height: 1.45;
+    }
+
+    .help-guide-intro strong {
+      color: var(--accent-gold);
+    }
+
+    .help-guide-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    @media (max-width: 700px) {
+      .help-guide-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .help-stick-card {
+      background: var(--bg-panel-alt);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .help-stick-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .help-stick-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .help-stick-stats {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--accent-gold);
+    }
+
+    .help-stick-body {
+      font-size: 0.76rem;
+      color: #cbd5e1;
+      line-height: 1.38;
+    }
+
+    .help-stick-tip {
+      font-size: 0.72rem;
+      color: #93c5fd;
+      margin-top: 2px;
+    }
+
+    .weapon-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-top: auto;
+      background: rgba(13, 19, 26, 0.4);
+      padding: 5px 6px;
+      border-radius: 4px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .stat-header span:last-child {
+      color: #fff;
+    }
+
+    .stat-meter {
+      height: 5px;
+      background: #0d131a;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .stat-meter-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+
+    /* Winner Screen Stats Table */
+    .winner-banner {
+      text-align: center;
+      padding: 12px 0;
+    }
+
+    .winner-trophy {
+      font-size: 2.5rem;
+      margin-bottom: 6px;
+    }
+
+    .winner-headline {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent-gold);
+      margin-bottom: 4px;
+    }
+
+    .winner-subtext {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+
+    .stats-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+      font-size: 0.88rem;
+    }
+
+    .stats-table th,
+    .stats-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border-subtle);
+      text-align: left;
+    }
+
+    .stats-table th {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .stats-table td.num {
+      text-align: right;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .modal-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    /* Subtle helper instruction overlay on top of canvas */
+    .controls-hint {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(13, 19, 26, 0.82);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      color: #e2e8f0;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 5;
+      transition: opacity 0.25s;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================================
+       TOP BROADCAST HEADER: MODE SELECTOR, SCOREBOARD, AND CONTROLS
+       ========================================================================= -->
+  <header class="hud-header">
+    <div class="brand-block">
+      <span class="brand-badge">WFBF Live</span>
+      <span class="brand-title">Shooting Pool</span>
+      <span class="brand-subtitle">Championship Firearms Billiards</span>
+    </div>
+
+    <div class="scoreboard" id="scoreboard">
+      <div class="player-card active" id="p1Card">
+        <span class="player-name" id="p1Name">Player 1</span>
+        <span class="player-group-tag" id="p1Tag">Open</span>
+        <span class="player-score" id="p1Score">0</span>
+      </div>
+      <span class="vs-divider" id="vsDivider">VS</span>
+      <div class="player-card" id="p2Card" style="display: none;">
+        <span class="player-name" id="p2Name">Computer</span>
+        <span class="player-group-tag" id="p2Tag">Open</span>
+        <span class="player-score" id="p2Score">0</span>
+      </div>
+    </div>
+
+    <div class="hud-actions">
+      <select id="modeSelect" class="mode-select" aria-label="Game Mode">
+        <option value="practice">1P Practice (Clear Table)</option>
+        <option value="ai" selected>Player vs Computer</option>
+        <option value="hotseat">2P Hotseat</option>
+      </select>
+      <button class="btn" id="soundToggleBtn" title="Toggle Audio">🔊 Audio</button>
+      <button class="btn" id="resetRackBtn">New Rack</button>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       MAIN POOL TABLE CANVAS ARENA
+       ========================================================================= -->
+  <main class="arena-wrapper">
+    <div class="controls-hint" id="controlsHint">
+      Move mouse/finger to aim • Press &amp; hold to sight • Release to fire (Power is set by your Stick)
+    </div>
+    <div class="canvas-container" id="canvasContainer">
+      <canvas id="poolCanvas" width="1100" height="580"></canvas>
+    </div>
+  </main>
+
+  <!-- =========================================================================
+       BOTTOM HUD: CURRENT STICK, CHANGE STICK BUTTON, POWER BAR, COMMENTARY
+       ========================================================================= -->
+  <footer class="hud-footer">
+    <div class="stick-panel">
+      <div class="stick-info">
+        <span class="stick-label">Current Stick: <strong class="stick-current-name" id="currentStickName">Shotgun</strong></span>
+        <div class="stick-mini-stats" id="currentStickMiniStats">
+          <span>PWR <strong>9/10</strong></span>
+          <span>ACC <strong>2/10</strong></span>
+          <span>CTRL <strong>1/10</strong></span>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="changeStickBtn">[ Change Stick ]</button>
+    </div>
+
+    <div class="power-panel">
+      <span class="power-label" id="shotStatusLabel">Stick Power</span>
+      <div class="power-bar-outer">
+        <div class="power-bar-fill" id="powerBarFill" style="width: 90%;"></div>
+      </div>
+      <span class="power-value" id="powerValueText">9/10</span>
+    </div>
+
+    <div class="commentary-panel">
+      <div class="commentary-tag">
+        <span class="live-dot"></span> Booth Commentary
+      </div>
+      <div class="commentary-text" id="commentaryText">
+        "Welcome to the World Firearms Billiards Championship. The 12-gauge Shotgun is out for the opening break."
+      </div>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       CHANGE STICK (WEAPON SELECTION) MODAL
+       ========================================================================= -->
+  <div class="modal-backdrop" id="stickModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">Select Your Stick</div>
+          <div class="modal-subtitle">WFBF Regulation Firearms — Every stick carries distinct ballistic tradeoffs</div>
+        </div>
+        <div class="modal-header-actions">
+          <button class="btn" id="openStickHelpBtn" title="Detailed Stick Field Guide">? Stick Guide</button>
+          <button class="btn" id="closeStickModalBtn">✕ Close</button>
+        </div>
+      </div>
+      <div class="stick-legend-bar">
+        <div class="stick-legend-item">
+          <span class="stick-legend-dot" style="background:#e74c3c;"></span>
+          <span><strong>Power:</strong> How hard the cue ball is struck.</span>
+        </div>
+        <div class="stick-legend-item">
+          <span class="stick-legend-dot" style="background:#3498db;"></span>
+          <span><strong>Accuracy:</strong> How closely shots follow the aiming line.</span>
+        </div>
+        <div class="stick-legend-item">
+          <span class="stick-legend-dot" style="background:#2ecc71;"></span>
+          <span><strong>Control:</strong> How easy it is to manage cue-ball position and finesse.</span>
+        </div>
+      </div>
+      <div class="modal-body" id="weaponListContainer">
+        <!-- Populated dynamically by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       STICK HELP / FIELD GUIDE POP-UP MODAL
+       ========================================================================= -->
+  <div class="modal-backdrop" id="stickHelpModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">WFBF Official Stick Field Guide</div>
+          <div class="modal-subtitle">Understanding Ballistic Tradeoffs, Shot Velocity, and Cue-Ball Leave</div>
+        </div>
+        <button class="btn" id="closeStickHelpBtn">✕ Back to Locker</button>
+      </div>
+      <div class="modal-body">
+        <div class="help-guide-intro">
+          In <strong>Shooting Pool</strong>, shot power is not manually charged—it is strictly determined by the firearm you pull from the bag. Choosing the right caliber for the distance, cut angle, and cluster density is the key to clearing the rack without scratching the cue ball.
+        </div>
+        <div class="help-guide-grid" id="stickHelpGrid">
+          <!-- Populated dynamically by JS -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="doneStickHelpBtn">Got It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MATCH OVER / WINNER MODAL
+       ========================================================================= -->
+  <div class="modal-backdrop" id="winnerModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <div class="modal-title">Official Match Result</div>
+          <div class="modal-subtitle">World Firearms Billiards Federation Certified Scorecard</div>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="winner-banner">
+          <div class="winner-trophy">🏆</div>
+          <div class="winner-headline" id="winnerHeadline">Player 1 Wins!</div>
+          <div class="winner-subtext" id="winnerSubtext">Cleared the table with clinical precision.</div>
+        </div>
+        <table class="stats-table" id="matchStatsTable">
+          <!-- Populated dynamically on match completion -->
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" id="playAgainBtn">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       GAME ENGINE, WEAPON SYSTEM, PHYSICS & AI (VANILLA JS)
+       ========================================================================= -->
+  <script>
+    "use strict";
+
+    /**
+     * =========================================================================
+     * 1. REGULATION WEAPONS ("STICKS") CONFIGURATION
+     * =========================================================================
+     * Each weapon defines:
+     * - power (1-10): Base kinetic impulse delivered to the cue ball
+     * - accuracy (1-10): Angular tightness (lower accuracy adds spread cone)
+     * - control (1-10): How finely the player can manage cue-ball position & finesse
+     * - difficulty: Difficulty rating badge shown on selection cards
+     * - pellets: Number of simultaneous projectiles per shot
+     * - burstCount: Number of sequential shots fired per trigger pull
+     * - burstIntervalMs: Delay between rounds in a burst
+     * - spreadRad: Maximum angular deviation (in radians) per projectile
+     * - recoilShake: Screen shake amplitude on firing
+     */
+    const WEAPONS = {
+      targetPistol22: {
+        id: "targetPistol22",
+        name: ".22 Target Pistol",
+        power: 2,
+        accuracy: 10,
+        control: 10,
+        badge: "Feather Touch",
+        difficulty: "Easy",
+        difficultyClass: "diff-easy",
+        notes: "Whisper-quiet tap • Fixed 2/10 velocity • Surgical lip tap-ins & ultra-delicate safeties",
+        guideSummary: "Fires a single low-velocity .22 LR competition round with zero spread and zero recoil jitter. The cue ball stops almost immediately after contact.",
+        guideTip: "Best For: Balls hanging in pocket jaws, short 1-diamond cuts, and freezing the cue ball behind blockers.",
+        fixedSpeed: 250,       // Fixed delicate velocity set strictly by 2/10 Power
+        pellets: 1,
+        burstCount: 1,
+        burstIntervalMs: 0,
+        spreadRad: 0.0,        // Pinpoint laser accuracy
+        controlJitter: 0.0,    // 10/10 control: parks the ball exactly where aimed
+        recoilShake: 2,
+        muzzleSize: 14,
+        shellColor: "#93c5fd",
+        pitch: 620
+      },
+      pistol9mm: {
+        id: "pistol9mm",
+        name: "9mm Pistol",
+        power: 4,
+        accuracy: 10,
+        control: 10,
+        badge: "Finesse Cue",
+        difficulty: "Easy",
+        difficultyClass: "diff-easy",
+        notes: "Low recoil • Fixed 4/10 velocity • Best for delicate positioning shots",
+        guideSummary: "The gold standard for positional play. Delivers a smooth 4/10 pace with dead-on 10/10 accuracy, letting you roll the cue ball cleanly into position for your next shot.",
+        guideTip: "Best For: Short-to-medium table shots, controlled shape, and high-percentage 8-ball finishes.",
+        fixedSpeed: 420,       // Fixed velocity set strictly by 4/10 Power
+        pellets: 1,
+        burstCount: 1,
+        burstIntervalMs: 0,
+        spreadRad: 0.0,        // Dead-on 10/10 accuracy
+        controlJitter: 0.0,    // 10/10 control: zero velocity/deflection variance
+        recoilShake: 4,
+        muzzleSize: 18,
+        shellColor: "#d4af37",
+        pitch: 420
+      },
+      magnum357: {
+        id: "magnum357",
+        name: ".357 Magnum",
+        power: 7,
+        accuracy: 8,
+        control: 7,
+        badge: "All-Around",
+        difficulty: "Medium",
+        difficultyClass: "diff-medium",
+        notes: "Balanced all-around choice • Fixed 7/10 velocity",
+        guideSummary: "A dependable workhorse revolver when the 9mm won't reach the pocket. Carries enough punch for multi-rail shape with only a slight accuracy cone.",
+        guideTip: "Best For: Mid-to-long shots across the center of the table and standard bank shots.",
+        fixedSpeed: 740,       // Fixed velocity set strictly by 7/10 Power
+        pellets: 1,
+        burstCount: 1,
+        burstIntervalMs: 0,
+        spreadRad: 0.028,      // Slight angular variance (8/10 accuracy)
+        controlJitter: 0.02,   // 7/10 control
+        recoilShake: 9,
+        muzzleSize: 28,
+        shellColor: "#e5c158",
+        pitch: 240
+      },
+      submachineGun: {
+        id: "submachineGun",
+        name: "Submachine Gun",
+        power: 6,
+        accuracy: 5,
+        control: 6,
+        badge: "5-Round Chatter",
+        difficulty: "Medium",
+        difficultyClass: "diff-medium",
+        notes: "Fires a 5-round micro burst • Fixed 6/10 velocity • Sustained progressive shove through traffic",
+        guideSummary: "Cycles 5 rapid 9mm micro-rounds into the cue ball over 160ms. Instead of a single snap, the cue ball receives a sustained forward push that powers through glancing kisses.",
+        guideTip: "Best For: Pushing the cue ball through tight traffic lanes or nudging 2-3 balls near a pocket.",
+        fixedSpeed: 680,       // Fixed velocity across 5 rapid micro-rounds
+        pellets: 1,
+        burstCount: 5,         // 5 sequential micro-rounds
+        burstIntervalMs: 40,
+        spreadRad: 0.052,
+        controlJitter: 0.038,
+        recoilShake: 8,
+        muzzleSize: 22,
+        shellColor: "#cbd5e1",
+        pitch: 360
+      },
+      assaultRifle: {
+        id: "assaultRifle",
+        name: "Assault Rifle",
+        power: 8,
+        accuracy: 6,
+        control: 5,
+        badge: "3-Round Burst",
+        difficulty: "Hard",
+        difficultyClass: "diff-hard",
+        notes: "Fires a 3-round burst • Fixed 8/10 velocity • Good balance of power and chaos",
+        guideSummary: "Fires a heavy 3-round rifle burst with progressive barrel climb. Rounds 2 and 3 strike the already-moving cue ball, creating lively second-stage acceleration.",
+        guideTip: "Best For: Aggressive power shots, breaking up medium clusters, and multi-rail escapes.",
+        fixedSpeed: 900,       // Fixed velocity set strictly by 8/10 Power
+        pellets: 1,
+        burstCount: 3,         // 3 sequential rounds that hit the cue ball in rapid succession
+        burstIntervalMs: 65,
+        spreadRad: 0.062,      // 6/10 accuracy
+        controlJitter: 0.045,  // 5/10 control
+        recoilShake: 10,
+        muzzleSize: 26,
+        shellColor: "#d4af37",
+        pitch: 310
+      },
+      desertEagle50: {
+        id: "desertEagle50",
+        name: "Desert Eagle .50 AE",
+        power: 9,
+        accuracy: 8,
+        control: 4,
+        badge: "Heavy Hand-Cannon",
+        difficulty: "Hard",
+        difficultyClass: "diff-hard",
+        notes: "Tremendous handgun punch • Fixed 9/10 velocity • High accuracy for firm cuts without rifle runaway speed",
+        guideSummary: "Bridges the gap between the .357 Magnum and the Sniper Rifle. Delivers a massive single-slug 9/10 wallop with tight 8/10 accuracy.",
+        guideTip: "Best For: Long cuts and power draws where you need serious speed without full sniper chaos.",
+        fixedSpeed: 1080,      // Fixed heavy velocity set strictly by 9/10 Power
+        pellets: 1,
+        burstCount: 1,
+        burstIntervalMs: 0,
+        spreadRad: 0.024,      // Very tight hand-cannon grouping
+        controlJitter: 0.035,  // Heavy recoil
+        recoilShake: 15,
+        muzzleSize: 34,
+        shellColor: "#f59e0b",
+        pitch: 180
+      },
+      sniperRifle: {
+        id: "sniperRifle",
+        name: "Sniper Rifle",
+        power: 10,
+        accuracy: 10,
+        control: 3,
+        badge: "Long-Range Cannon",
+        difficulty: "Hard",
+        difficultyClass: "diff-hard",
+        notes: "Extremely accurate • Extreme 10/10 cue-ball speed • Great for long shots, risky for touch shots",
+        guideSummary: "Equipped with a laser sight and zero angular spread. Fires a 10/10 hyper-velocity round that drills long cross-table pots dead center—but sends the cue ball screaming off 3–4 rails afterward.",
+        guideTip: "Best For: Full-table diagonal snipes. Check where the cue ball will ricochet to avoid scratching!",
+        fixedSpeed: 1420,      // Fixed extreme velocity set strictly by 10/10 Power
+        pellets: 1,
+        burstCount: 1,
+        burstIntervalMs: 0,
+        spreadRad: 0.0,        // Pinpoint laser accuracy (10/10)
+        controlJitter: 0.055,  // 3/10 control: hard to finesse cue ball leave
+        recoilShake: 20,
+        muzzleSize: 44,
+        shellColor: "#b8860b",
+        pitch: 150
+      },
+      shotgun: {
+        id: "shotgun",
+        name: "Shotgun",
+        power: 9,
+        accuracy: 2,
+        control: 1,
+        badge: "Cluster Breaker",
+        difficulty: "Expert",
+        difficultyClass: "diff-expert",
+        notes: "Pellet spread • Multiple impacts possible • Excellent for breaking clusters, terrible for precision shots",
+        guideSummary: "Unleashes 8 buckshot pellets in a wide cone. Multiple pellets strike different points on the cue ball simultaneously, generating massive energy and unpredictable deflection.",
+        guideTip: "Best For: The opening break shot and smashing locked clusters wide open.",
+        fixedSpeed: 1060,      // Fixed velocity set strictly by 9/10 Power
+        pellets: 8,            // Fires 8 buckshot pellets in a wide spread cone
+        burstCount: 1,
+        burstIntervalMs: 0,
+        spreadRad: 0.22,       // Wide pellet spread (2/10 accuracy)
+        controlJitter: 0.11,   // 1/10 control: wild deflection & speed variance
+        recoilShake: 16,
+        muzzleSize: 40,
+        shellColor: "#c0392b",
+        pitch: 130
+      }
+    };
+
+    // Regulation Stick Order in Locker (Shotgun placed last after Sniper Rifle)
+    const WEAPON_KEYS = [
+      "targetPistol22",
+      "pistol9mm",
+      "magnum357",
+      "submachineGun",
+      "assaultRifle",
+      "desertEagle50",
+      "sniperRifle",
+      "shotgun"
+    ];
+
+    /**
+     * =========================================================================
+     * 2. DEADPAN SPORTS BROADCAST COMMENTARY LINES
+     * =========================================================================
+     */
+    const GENERAL_COMMENTARY = [
+      "Interesting choice, a shotgun for a safety shot.",
+      "The sniper rifle remains controversial among pool purists.",
+      "Bold move switching to the Magnum here.",
+      "Most professionals would've used a 9mm.",
+      "Nobody expected the shotgun from this distance.",
+      "The rules committee still refuses to comment.",
+      "Impeccable trigger discipline on the backswing.",
+      "You can really smell the cordite hanging over the baize tonight.",
+      "Notice how he chalks the muzzle before addressing the cue ball.",
+      "A textbook ballistic kiss off the side cushion.",
+      "The venue's bulletproof glass is really earning its keep this frame.",
+      "Purists complain about hollow-points, but the spin transfer is undeniable.",
+      "Referee checks the caliber gauge—completely legal under WFBF Rule 14B."
+    ];
+
+    const WEAPON_SPECIFIC_COMMENTARY = {
+      pistol9mm: [
+        "Most professionals would've used a 9mm—and indeed, out comes the 9mm.",
+        "Clinical 9mm touch. Barely left a powder burn on the felt.",
+        "Classic 9mm positional play. Controlled, quiet, civilized.",
+        "He's treating the 9mm like a surgical scalpel out there."
+      ],
+      magnum357: [
+        "Bold move switching to the Magnum here.",
+        "That .357 revolver has a heavy trigger pull, but look at the cue ball action.",
+        "Classic six-shooter geometry on the cross-table bank.",
+        "Nothing says 'respect the felt' quite like a .357 Magnum."
+      ],
+      shotgun: [
+        "Interesting choice, a shotgun for a safety shot.",
+        "Nobody expected the shotgun from this distance.",
+        "Buckshot on a tight lie—the crowd is ducking behind the velvet rope.",
+        "Twelve-gauge spread really takes the guesswork out of cluster management.",
+        "The groundskeeper is going to be picking lead pellets out of the slate all week."
+      ],
+      assaultRifle: [
+        "Three-round burst! The second and third rounds really redirect the cue ball's narrative.",
+        "Tactical burst fire—hard to predict the leave, impossible to look away.",
+        "The rules committee still refuses to comment on select-fire cues.",
+        "Double-tap follow-through keeps the cue ball driving through traffic."
+      ],
+      sniperRifle: [
+        "The sniper rifle remains controversial among pool purists.",
+        "Fifty-caliber velocity! The pocket leather nearly caught fire.",
+        "Bringing a bolt-action rifle to a three-inch tap-in shows tremendous conviction.",
+        "He's dialed the scope in for windage inside an indoor pool hall."
+      ],
+      targetPistol22: [
+        "A .22 rimfire on the felt—hardly louder than a referee clearing his throat.",
+        "Delicate .22 tap. He could've played that safety in a public library.",
+        "The committee appreciates the low decibel levels of the target pistol.",
+        "Notice the precision on the .22—just enough lead to drop the ball and park the cue."
+      ],
+      desertEagle50: [
+        "Desert Eagle point-fifty action! That slide has more travel than a commuter train.",
+        "Fifty Action Express on a three-cushion bank. Pure unadulterated swagger.",
+        "You don't need English when you've got half an inch of lead behind the ball.",
+        "The ear protection in the front row is strictly mandatory for the Desert Eagle."
+      ],
+      submachineGun: [
+        "Five-round micro-burst! A gentle sustained chatter down the side rail.",
+        "Listen to the cycling rate on that SMG—kept the cue ball walking all the way home.",
+        "Tactical full-auto billiards. The rulebook doesn't forbid it, so here we are.",
+        "Five distinct ballistic pushes—like having a personal cue escort."
+      ]
+    };
+
+    const EVENT_COMMENTARY = {
+      scratch: [
+        "Ooh, a ballistic scratch! Cue ball goes down—probably trying to escape the gunfire.",
+        "Too much muzzle velocity! The cue ball rockets straight into the jaws.",
+        "Foul on the play. Even with a firearm, you still have to keep the white ball on the table."
+      ],
+      multiPot: [
+        "Multiple balls down on a single trigger pull! Sensational firepower!",
+        "Collateral damage in the best possible way—two balls drop!",
+        "Now that's efficiency: one pull of the trigger, multiple pockets fed."
+      ],
+      singlePot: [
+        "Clean pot! Right into the heart of the leather.",
+        "Found the bottom of the cup. Remarkable ballistics.",
+        "Clinical conversion under heavy recoil."
+      ]
+    };
+
+    /**
+     * =========================================================================
+     * 3. PROCEDURAL WEB AUDIO SYNTHESIZER (NO EXTERNAL ASSETS)
+     * =========================================================================
+     */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) {
+            this.ctx = new AudioCtx();
+          }
+        }
+        if (this.ctx && this.ctx.state === "suspended") {
+          this.ctx.resume();
+        }
+      }
+
+      playGunshot(weapon) {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+
+        // 1. White noise explosion burst
+        const duration = weapon.id === "sniperRifle" ? 0.42
+          : (weapon.id === "shotgun" || weapon.id === "desertEagle50") ? 0.36
+          : weapon.id === "targetPistol22" ? 0.12
+          : weapon.id === "submachineGun" ? 0.16
+          : 0.22;
+        const bufferSize = Math.floor(this.ctx.sampleRate * duration);
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * (duration * 0.32)));
+        }
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.setValueAtTime(weapon.pitch * 4.5, now);
+        filter.frequency.exponentialRampToValueAtTime(110, now + duration);
+
+        const gain = this.ctx.createGain();
+        const baseVol = weapon.id === "targetPistol22" ? 0.08 : weapon.id === "submachineGun" ? 0.16 : 0.22;
+        const vol = baseVol + (weapon.power / 10) * 0.28;
+        gain.gain.setValueAtTime(vol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start(now);
+
+        // 2. Low-end punch oscillator
+        const osc = this.ctx.createOscillator();
+        const oscGain = this.ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(weapon.pitch, now);
+        osc.frequency.exponentialRampToValueAtTime(38, now + 0.14);
+
+        oscGain.gain.setValueAtTime(vol * 0.9, now);
+        oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+        osc.connect(oscGain);
+        oscGain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.16);
+      }
+
+      playBallHit(speed) {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const clackVol = Math.min(0.35, Math.max(0.02, speed / 900));
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sine";
+        const freq = 1400 + Math.random() * 350;
+        osc.frequency.setValueAtTime(freq, now);
+        osc.frequency.exponentialRampToValueAtTime(280, now + 0.035);
+
+        gain.gain.setValueAtTime(clackVol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.038);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.04);
+      }
+
+      playRailBounce(speed) {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const vol = Math.min(0.22, Math.max(0.015, speed / 1100));
+
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(165, now);
+        osc.frequency.exponentialRampToValueAtTime(55, now + 0.06);
+
+        gain.gain.setValueAtTime(vol, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.065);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.07);
+      }
+
+      playPocketDrop() {
+        if (!this.enabled || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(90, now + 0.16);
+
+        gain.gain.setValueAtTime(0.24, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.18);
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    /**
+     * =========================================================================
+     * 4. TABLE GEOMETRY & POOL BALL CONSTANTS
+     * =========================================================================
+     */
+    const CANVAS_W = 1100;
+    const CANVAS_H = 580;
+
+    // Playing surface (felt bounds inside the cushions)
+    const TABLE = {
+      left: 70,
+      top: 60,
+      right: 1030,
+      bottom: 520,
+      get width() { return this.right - this.left; },   // 960
+      get height() { return this.bottom - this.top; },  // 460
+      get headStringX() { return this.left + this.width * 0.25; },
+      get footSpotX() { return this.left + this.width * 0.74; },
+      get centerY() { return (this.top + this.bottom) / 2; }
+    };
+
+    const BALL_RADIUS = 13.5;
+    const POCKET_RADIUS_CORNER = 27;
+    const POCKET_RADIUS_SIDE = 25;
+
+    // 6 Regulation Pockets
+    const POCKETS = [
+      { x: TABLE.left + 2,               y: TABLE.top + 2,               r: POCKET_RADIUS_CORNER },
+      { x: (TABLE.left + TABLE.right)/2, y: TABLE.top - 5,               r: POCKET_RADIUS_SIDE },
+      { x: TABLE.right - 2,              y: TABLE.top + 2,               r: POCKET_RADIUS_CORNER },
+      { x: TABLE.left + 2,               y: TABLE.bottom - 2,            r: POCKET_RADIUS_CORNER },
+      { x: (TABLE.left + TABLE.right)/2, y: TABLE.bottom + 5,            r: POCKET_RADIUS_SIDE },
+      { x: TABLE.right - 2,              y: TABLE.bottom - 2,            r: POCKET_RADIUS_CORNER }
+    ];
+
+    // Standard Pool Ball Colors (1-7 Solids, 8 Black, 9-15 Stripes)
+    const BALL_COLORS = {
+      0:  "#f8fafc", // Cue ball
+      1:  "#f1c40f", // Yellow
+      2:  "#2563eb", // Blue
+      3:  "#dc2626", // Red
+      4:  "#7c3aed", // Purple
+      5:  "#ea580c", // Orange
+      6:  "#16a34a", // Green
+      7:  "#881337", // Maroon
+      8:  "#111827", // 8-Ball Black
+      9:  "#f1c40f",
+      10: "#2563eb",
+      11: "#dc2626",
+      12: "#7c3aed",
+      13: "#ea580c",
+      14: "#16a34a",
+      15: "#881337"
+    };
+
+    /**
+     * =========================================================================
+     * 5. GAME STATE & MATCH TRACKING
+     * =========================================================================
+     */
+    const canvas = document.getElementById("poolCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const state = {
+      mode: "ai",                  // 'practice' | 'ai' | 'hotseat'
+      phase: "AIMING",             // 'AIMING' | 'SIGHTING' | 'FIRING_BURST' | 'SIMULATING' | 'AI_THINKING' | 'GAME_OVER'
+      currentPlayer: 1,            // 1 or 2
+      currentWeaponKey: "shotgun",
+      p1WeaponKey: "shotgun",
+      p2WeaponKey: "magnum357",
+
+      // Standard 8-Ball Table State
+      isBreakShot: true,
+      tableOpen: true,             // True until a player legally pockets a Solid or Stripe
+
+      // Aiming & Sighting (Power is strictly determined by the equipped weapon)
+      aimAngle: 0,
+      isSighting: false,
+
+      // Match Statistics & 8-Ball Group Assignment ('solids' | 'stripes' | null)
+      players: {
+        1: { name: "Player 1", group: null, score: 0, shots: 0, scratches: 0, fouls: 0, weaponUsage: {} },
+        2: { name: "Computer", group: null, score: 0, shots: 0, scratches: 0, fouls: 0, weaponUsage: {} }
+      },
+
+      // Turn tracking
+      turnPottedBalls: [],
+      turnScratched: false,
+      firstBallHitId: null,        // Tracks the first object ball struck by the cue ball this shot
+      turnShooterWasOnEight: false,// Whether shooter had cleared their group before pulling the trigger
+      burstQueue: [],              // Pending scheduled rounds for multi-shot bursts
+
+      // Visual & Physics entities
+      balls: [],
+      bullets: [],                 // Visual high-speed bullet tracers colliding with cue ball
+      particles: [],               // Muzzle flash sparks & smoke
+      shells: [],                  // Ejected brass/shotgun casings resting or bouncing
+      floatingTexts: [],           // "+1 POTTED!", "SCRATCH!", "FOUL!", etc.
+      screenShake: 0,
+      recoilOffset: 0,
+
+      // AI state
+      aiTimer: 0,
+      aiPlannedAngle: 0
+    };
+
+    /**
+     * Helper functions for Standard 8-Ball Groups (Solids 1-7, 8-Ball 8, Stripes 9-15)
+     */
+    function getBallGroup(ballId) {
+      if (ballId >= 1 && ballId <= 7) return "solids";
+      if (ballId >= 9 && ballId <= 15) return "stripes";
+      if (ballId === 8) return "eight";
+      return null;
+    }
+
+    function getRemainingGroupBalls(group) {
+      if (!group) return [];
+      return state.balls.filter(b => !b.pocketed && getBallGroup(b.id) === group);
+    }
+
+    function isPlayerOnEightBall(playerNum) {
+      if (state.mode === "practice") return false;
+      const group = state.players[playerNum].group;
+      if (!group) return false;
+      return getRemainingGroupBalls(group).length === 0;
+    }
+
+    function isLegalTargetBallForPlayer(ballId, playerNum) {
+      if (ballId === 0) return false;
+      if (state.mode === "practice") return true;
+
+      if (state.tableOpen) {
+        // On an open table, any solid (1-7) or stripe (9-15) is a legal first contact; 8-ball is not
+        return ballId !== 8;
+      }
+
+      if (isPlayerOnEightBall(playerNum)) {
+        return ballId === 8;
+      }
+
+      const playerGroup = state.players[playerNum].group;
+      return getBallGroup(ballId) === playerGroup;
+    }
+
+    function recomputePlayerScores() {
+      if (state.mode === "practice") {
+        const sunkCount = state.balls.filter(b => b.id !== 0 && b.pocketed).length;
+        state.players[1].score = sunkCount;
+        return;
+      }
+
+      // In standard 8-ball, each player's score is how many of their assigned group balls are pocketed
+      for (const pNum of [1, 2]) {
+        const grp = state.players[pNum].group;
+        if (!grp) {
+          state.players[pNum].score = 0;
+        } else {
+          const sunkInGroup = state.balls.filter(b => b.pocketed && getBallGroup(b.id) === grp).length;
+          state.players[pNum].score = sunkInGroup;
+        }
+      }
+    }
+
+    /**
+     * =========================================================================
+     * 6. INITIALIZATION & RACK SETUP
+     * =========================================================================
+     */
+    function createRack() {
+      state.balls = [];
+      state.bullets = [];
+      state.particles = [];
+      state.shells = [];
+      state.floatingTexts = [];
+      state.burstQueue = [];
+      state.screenShake = 0;
+
+      // 1. Place Cue Ball at head spot
+      state.balls.push({
+        id: 0,
+        x: TABLE.headStringX,
+        y: TABLE.centerY,
+        vx: 0,
+        vy: 0,
+        r: BALL_RADIUS,
+        pocketed: false,
+        sinking: null
+      });
+
+      // 2. Build standard 15-ball triangle rack at foot spot
+      // Ensure 8-ball is in the center of row 3 (index 4 in 0-based 15-ball array)
+      const order = [1, 9, 2, 10, 8, 3, 11, 4, 12, 5, 13, 6, 14, 7, 15];
+      const spacingX = BALL_RADIUS * Math.sqrt(3) + 0.45;
+      const spacingY = BALL_RADIUS * 2 + 0.45;
+
+      let idx = 0;
+      for (let col = 0; col < 5; col++) {
+        const colX = TABLE.footSpotX + col * spacingX;
+        const startY = TABLE.centerY - (col * spacingY) / 2;
+        for (let row = 0; row <= col; row++) {
+          const ballId = order[idx++];
+          const jitterX = (Math.random() - 0.5) * 0.18;
+          const jitterY = (Math.random() - 0.5) * 0.18;
+          state.balls.push({
+            id: ballId,
+            x: colX + jitterX,
+            y: startY + row * spacingY + jitterY,
+            vx: 0,
+            vy: 0,
+            r: BALL_RADIUS,
+            pocketed: false,
+            sinking: null
+          });
+        }
+      }
+    }
+
+    function startNewMatch() {
+      state.mode = document.getElementById("modeSelect").value;
+      state.phase = "AIMING";
+      state.currentPlayer = 1;
+      state.p1WeaponKey = "shotgun";
+      state.p2WeaponKey = "magnum357";
+      state.currentWeaponKey = state.p1WeaponKey;
+      state.isBreakShot = true;
+      state.tableOpen = true;
+      state.isSighting = false;
+      state.aimAngle = 0;
+
+      const p2Name = state.mode === "ai" ? "Computer" : "Player 2";
+      state.players = {
+        1: { name: "Player 1", group: null, score: 0, shots: 0, scratches: 0, fouls: 0, weaponUsage: {} },
+        2: { name: p2Name,     group: null, score: 0, shots: 0, scratches: 0, fouls: 0, weaponUsage: {} }
+      };
+
+      createRack();
+      updateHUD();
+      updatePowerHUD();
+      setCommentary("Welcome to the World Firearms Billiards Championship. The 12-gauge Shotgun is out for the opening break.");
+      document.getElementById("winnerModal").classList.remove("open");
+    }
+
+    /**
+     * =========================================================================
+     * 7. FIREARM BALLISTICS & SHOT EXECUTION
+     * =========================================================================
+     */
+    function getCueBall() {
+      return state.balls[0];
+    }
+
+    function getActiveWeapon() {
+      return WEAPONS[state.currentWeaponKey];
+    }
+
+    function recordWeaponUse(playerNum, weaponKey) {
+      const usage = state.players[playerNum].weaponUsage;
+      usage[weaponKey] = (usage[weaponKey] || 0) + 1;
+    }
+
+    /**
+     * Triggers the currently selected firearm.
+     * Shot power is fixed and determined strictly by the selected weapon.
+     */
+    function fireWeapon(baseAngle) {
+      const cueBall = getCueBall();
+      if (!cueBall || cueBall.pocketed) return;
+
+      const weapon = getActiveWeapon();
+      const playerStats = state.players[state.currentPlayer];
+      playerStats.shots++;
+      recordWeaponUse(state.currentPlayer, weapon.id);
+
+      state.turnPottedBalls = [];
+      state.turnScratched = false;
+      state.firstBallHitId = null;
+      state.turnShooterWasOnEight = isPlayerOnEightBall(state.currentPlayer);
+      state.phase = "FIRING_BURST";
+      state.burstQueue = [];
+      updateHUD();
+
+      // Schedule each round in the burst (1 for most weapons, 3 for Assault Rifle)
+      for (let b = 0; b < weapon.burstCount; b++) {
+        state.burstQueue.push({
+          fireTime: performance.now() + b * weapon.burstIntervalMs,
+          burstIndex: b,
+          baseAngle,
+          weapon
+        });
+      }
+    }
+
+    /**
+     * Executes a single discharge event from the burst queue.
+     * Spawns muzzle flash, shell casing, sound, screen shake, and physical bullet(s)
+     * that strike the cue ball with the weapon's fixed ballistic power.
+     */
+    function executeDischarge(discharge) {
+      const cueBall = getCueBall();
+      if (!cueBall || cueBall.pocketed) return;
+
+      const { weapon, baseAngle, burstIndex } = discharge;
+
+      // Progressive recoil drift on burst rounds 2 and 3
+      const burstDrift = burstIndex > 0
+        ? (Math.random() - 0.5) * weapon.spreadRad * (1 + burstIndex * 0.65)
+        : 0;
+
+      const shotAngle = baseAngle + burstDrift;
+
+      // Muzzle world position (just behind the cue ball along the aim line)
+      const muzzleDist = BALL_RADIUS + 26;
+      const muzzleX = cueBall.x - Math.cos(shotAngle) * muzzleDist;
+      const muzzleY = cueBall.y - Math.sin(shotAngle) * muzzleDist;
+
+      // Sound & Screen Shake scaled by weapon power
+      sound.playGunshot(weapon);
+      state.screenShake = Math.max(state.screenShake, weapon.recoilShake);
+      state.recoilOffset = 14;
+
+      // Spawn Muzzle Flash Particles
+      spawnMuzzleFlash(muzzleX, muzzleY, shotAngle, weapon);
+
+      // Eject Shell Casing
+      spawnShellCasing(muzzleX, muzzleY, shotAngle, weapon);
+
+      // Speed is determined strictly by the weapon's fixedSpeed (plus slight control jitter on low-control weapons)
+      const jitterFactor = 1 + (Math.random() - 0.5) * 2 * weapon.controlJitter;
+      const totalSpeed = weapon.fixedSpeed * jitterFactor;
+
+      // Spawn projectiles (1 bullet for standard weapons, 8 pellets for Shotgun)
+      const pelletCount = weapon.pellets;
+      for (let p = 0; p < pelletCount; p++) {
+        const spreadOffset = (Math.random() - 0.5) * 2 * weapon.spreadRad;
+        const pelletAngle = shotAngle + spreadOffset;
+
+        // Lateral offset across cue ball face: only applies to multi-pellet shotgun blasts
+        const lateralOffset = pelletCount > 1
+          ? ((p / (pelletCount - 1)) - 0.5) * (BALL_RADIUS * 1.35) + (Math.random() - 0.5) * 3
+          : 0;
+
+        const perpX = -Math.sin(shotAngle);
+        const perpY = Math.cos(shotAngle);
+
+        const startX = muzzleX + perpX * (lateralOffset * 0.35);
+        const startY = muzzleY + perpY * (lateralOffset * 0.35);
+
+        const pelletImpulse = pelletCount > 1
+          ? (totalSpeed / pelletCount) * 1.25
+          : (weapon.burstCount > 1 ? totalSpeed * 0.45 : totalSpeed);
+
+        const staggerDist = pelletCount > 1 ? (p * 5 + Math.random() * 6) : 0;
+
+        state.bullets.push({
+          x: startX - Math.cos(pelletAngle) * staggerDist,
+          y: startY - Math.sin(pelletAngle) * staggerDist,
+          vx: Math.cos(pelletAngle) * 2200,
+          vy: Math.sin(pelletAngle) * 2200,
+          angle: pelletAngle,
+          lateralOffset,
+          impulse: pelletImpulse,
+          active: true,
+          traveled: 0,
+          maxTravel: 180
+        });
+      }
+    }
+
+    /**
+     * =========================================================================
+     * 8. VISUAL EFFECTS: MUZZLE FLASH & SHELL CASINGS
+     * =========================================================================
+     */
+    function spawnMuzzleFlash(x, y, angle, weapon) {
+      const count = 14 + weapon.power * 2;
+      for (let i = 0; i < count; i++) {
+        const spread = (Math.random() - 0.5) * 0.95;
+        const spd = 80 + Math.random() * (140 + weapon.power * 22);
+        const isSmoke = i % 3 === 0;
+        state.particles.push({
+          x,
+          y,
+          vx: Math.cos(angle + spread) * spd,
+          vy: Math.sin(angle + spread) * spd,
+          life: 1.0,
+          decay: isSmoke ? 1.4 + Math.random() * 0.8 : 4.5 + Math.random() * 3.0,
+          size: isSmoke ? 6 + Math.random() * 8 : 2.5 + Math.random() * 4.5,
+          color: isSmoke
+            ? "rgba(180, 190, 200, 0.35)"
+            : (Math.random() > 0.4 ? "#ffdd57" : "#ff6b35")
+        });
+      }
+    }
+
+    function spawnShellCasing(x, y, angle, weapon) {
+      const ejectAngle = angle + Math.PI * 0.55 + (Math.random() - 0.5) * 0.4;
+      const ejectSpeed = 90 + Math.random() * 70;
+      const cLength = weapon.id === "shotgun" ? 10
+        : weapon.id === "sniperRifle" ? 12
+        : weapon.id === "desertEagle50" ? 9
+        : weapon.id === "targetPistol22" ? 5
+        : 7;
+      const cWidth = weapon.id === "shotgun" ? 4.5
+        : weapon.id === "desertEagle50" ? 4.0
+        : weapon.id === "targetPistol22" ? 2.0
+        : 3.0;
+      state.shells.push({
+        x,
+        y,
+        vx: Math.cos(ejectAngle) * ejectSpeed,
+        vy: Math.sin(ejectAngle) * ejectSpeed,
+        rot: Math.random() * Math.PI * 2,
+        vRot: (Math.random() - 0.5) * 22,
+        color: weapon.shellColor,
+        length: cLength,
+        width: cWidth,
+        alpha: 1.0
+      });
+      if (state.shells.length > 40) {
+        state.shells.shift();
+      }
+    }
+
+    function addFloatingText(text, x, y, color = "#f0b429") {
+      state.floatingTexts.push({
+        text,
+        x,
+        y,
+        vy: -38,
+        life: 1.5,
+        color
+      });
+    }
+
+    /**
+     * =========================================================================
+     * 9. HIGH-PRECISION SUB-STEPPED 2D POOL PHYSICS ENGINE
+     * =========================================================================
+     */
+    function updatePhysics(dt) {
+      // 1. Check scheduled burst rounds
+      if (state.phase === "FIRING_BURST") {
+        const now = performance.now();
+        while (state.burstQueue.length > 0 && now >= state.burstQueue[0].fireTime) {
+          const nextShot = state.burstQueue.shift();
+          executeDischarge(nextShot);
+        }
+        if (state.burstQueue.length === 0 && state.bullets.length === 0) {
+          state.phase = "SIMULATING";
+        }
+      }
+
+      // 2. Determine adaptive sub-steps to guarantee zero tunneling/clipping
+      let maxSpeed = 0;
+      for (const b of state.balls) {
+        if (b.pocketed) continue;
+        const s = Math.hypot(b.vx, b.vy);
+        if (s > maxSpeed) maxSpeed = s;
+      }
+
+      const maxStepDist = BALL_RADIUS * 0.25;
+      const neededSteps = Math.ceil((maxSpeed * dt) / maxStepDist);
+      const subSteps = Math.max(10, Math.min(48, neededSteps));
+      const subDt = dt / subSteps;
+
+      for (let step = 0; step < subSteps; step++) {
+        stepBullets(subDt);
+        stepBalls(subDt);
+      }
+
+      // 3. Update sinking animations
+      for (const b of state.balls) {
+        if (b.sinking) {
+          b.sinking.progress += dt * 4.2;
+          b.x += (b.sinking.pocketX - b.x) * Math.min(1, dt * 14);
+          b.y += (b.sinking.pocketY - b.y) * Math.min(1, dt * 14);
+          if (b.sinking.progress >= 1) {
+            b.sinking = null;
+          }
+        }
+      }
+
+      // 4. Update particles, shells, screen shake, recoil
+      for (let i = state.particles.length - 1; i >= 0; i--) {
+        const p = state.particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vx *= Math.pow(0.08, dt);
+        p.vy *= Math.pow(0.08, dt);
+        p.life -= p.decay * dt;
+        if (p.life <= 0) state.particles.splice(i, 1);
+      }
+
+      for (const s of state.shells) {
+        s.x += s.vx * dt;
+        s.y += s.vy * dt;
+        s.rot += s.vRot * dt;
+        s.vx *= Math.pow(0.02, dt);
+        s.vy *= Math.pow(0.02, dt);
+        s.vRot *= Math.pow(0.02, dt);
+      }
+
+      for (let i = state.floatingTexts.length - 1; i >= 0; i--) {
+        const ft = state.floatingTexts[i];
+        ft.y += ft.vy * dt;
+        ft.life -= dt;
+        if (ft.life <= 0) state.floatingTexts.splice(i, 1);
+      }
+
+      if (state.screenShake > 0) {
+        state.screenShake = Math.max(0, state.screenShake - dt * 38);
+      }
+      if (state.recoilOffset > 0) {
+        state.recoilOffset = Math.max(0, state.recoilOffset - dt * 55);
+      }
+
+      // 5. Check if all motion has settled to conclude the turn
+      if (state.phase === "SIMULATING") {
+        if (areAllBallsStopped() && state.bullets.length === 0 && state.burstQueue.length === 0) {
+          onTurnSettled();
+        }
+      }
+    }
+
+    /**
+     * Moves active projectiles and transfers ballistic momentum to the cue ball upon impact.
+     */
+    function stepBullets(subDt) {
+      const cueBall = getCueBall();
+      for (let i = state.bullets.length - 1; i >= 0; i--) {
+        const bul = state.bullets[i];
+        const moveX = bul.vx * subDt;
+        const moveY = bul.vy * subDt;
+        bul.x += moveX;
+        bul.y += moveY;
+        bul.traveled += Math.hypot(moveX, moveY);
+
+        if (cueBall && !cueBall.pocketed) {
+          const dx = cueBall.x - bul.x;
+          const dy = cueBall.y - bul.y;
+          const dist = Math.hypot(dx, dy);
+
+          // Bullet hits the cue ball (or reaches its strike plane)
+          if (dist <= cueBall.r + 4 || bul.traveled >= 28) {
+            const offsetRatio = Math.max(-0.75, Math.min(0.75, bul.lateralOffset / BALL_RADIUS));
+            const deflectionAngle = bul.angle - offsetRatio * 0.28;
+
+            cueBall.vx += Math.cos(deflectionAngle) * bul.impulse;
+            cueBall.vy += Math.sin(deflectionAngle) * bul.impulse;
+
+            for (let s = 0; s < 4; s++) {
+              const sparkAng = bul.angle + Math.PI + (Math.random() - 0.5) * 1.4;
+              const sparkSpd = 60 + Math.random() * 110;
+              state.particles.push({
+                x: cueBall.x - Math.cos(bul.angle) * BALL_RADIUS,
+                y: cueBall.y - Math.sin(bul.angle) * BALL_RADIUS,
+                vx: Math.cos(sparkAng) * sparkSpd,
+                vy: Math.sin(sparkAng) * sparkSpd,
+                life: 0.7,
+                decay: 6.0,
+                size: 2.2,
+                color: "#fff7ed"
+              });
+            }
+
+            sound.playBallHit(bul.impulse * 0.8);
+            state.bullets.splice(i, 1);
+            continue;
+          }
+        }
+
+        if (bul.traveled > bul.maxTravel) {
+          state.bullets.splice(i, 1);
+        }
+      }
+    }
+
+    /**
+     * Advances ball positions, applies rolling/sliding friction, resolves rail bounces,
+     * checks pocket captures, and resolves elastic ball-to-ball collisions.
+     */
+    function stepBalls(subDt) {
+      const restitutionBall = 0.955;
+      const restitutionRail = 0.81;
+      const rollingDrag = 0.992;
+      const linearFriction = 42.0;
+      const stopThreshold = 3.2;
+
+      // 1. Integrate velocity & apply felt friction
+      for (const b of state.balls) {
+        if (b.pocketed) continue;
+
+        b.x += b.vx * subDt;
+        b.y += b.vy * subDt;
+
+        const speed = Math.hypot(b.vx, b.vy);
+        if (speed > 0) {
+          const dragFactor = Math.pow(rollingDrag, subDt * 60);
+          let newSpeed = speed * dragFactor - linearFriction * subDt;
+          if (newSpeed < stopThreshold) {
+            b.vx = 0;
+            b.vy = 0;
+          } else {
+            const scale = newSpeed / speed;
+            b.vx *= scale;
+            b.vy *= scale;
+          }
+        }
+      }
+
+      // 2. Check Pocket Drops before rail collisions
+      for (const b of state.balls) {
+        if (b.pocketed) continue;
+        for (const p of POCKETS) {
+          const dist = Math.hypot(b.x - p.x, b.y - p.y);
+          if (dist < p.r) {
+            handleBallPocketed(b, p);
+            break;
+          }
+        }
+      }
+
+      // 3. Resolve Cushion (Rail) Bounces (skipping pocket mouth gaps)
+      const sidePocketX = (TABLE.left + TABLE.right) / 2;
+      const cornerGap = 28;
+      const sideGap = 25;
+
+      for (const b of state.balls) {
+        if (b.pocketed) continue;
+
+        const nearTopBottomCornerX =
+          b.x < TABLE.left + cornerGap || b.x > TABLE.right - cornerGap;
+        const nearSidePocketX = Math.abs(b.x - sidePocketX) < sideGap;
+        const nearCornerY =
+          b.y < TABLE.top + cornerGap || b.y > TABLE.bottom - cornerGap;
+
+        if (b.y - b.r < TABLE.top && !nearTopBottomCornerX && !nearSidePocketX) {
+          b.y = TABLE.top + b.r;
+          if (b.vy < 0) {
+            sound.playRailBounce(Math.abs(b.vy));
+            b.vy = -b.vy * restitutionRail;
+          }
+        }
+        if (b.y + b.r > TABLE.bottom && !nearTopBottomCornerX && !nearSidePocketX) {
+          b.y = TABLE.bottom - b.r;
+          if (b.vy > 0) {
+            sound.playRailBounce(Math.abs(b.vy));
+            b.vy = -b.vy * restitutionRail;
+          }
+        }
+        if (b.x - b.r < TABLE.left && !nearCornerY) {
+          b.x = TABLE.left + b.r;
+          if (b.vx < 0) {
+            sound.playRailBounce(Math.abs(b.vx));
+            b.vx = -b.vx * restitutionRail;
+          }
+        }
+        if (b.x + b.r > TABLE.right && !nearCornerY) {
+          b.x = TABLE.right - b.r;
+          if (b.vx > 0) {
+            sound.playRailBounce(Math.abs(b.vx));
+            b.vx = -b.vx * restitutionRail;
+          }
+        }
+
+        const jawMargin = 14;
+        if (b.x < TABLE.left - jawMargin) { b.x = TABLE.left - jawMargin; b.vx = Math.abs(b.vx) * 0.7; }
+        if (b.x > TABLE.right + jawMargin) { b.x = TABLE.right + jawMargin; b.vx = -Math.abs(b.vx) * 0.7; }
+        if (b.y < TABLE.top - jawMargin) { b.y = TABLE.top - jawMargin; b.vy = Math.abs(b.vy) * 0.7; }
+        if (b.y > TABLE.bottom + jawMargin) { b.y = TABLE.bottom + jawMargin; b.vy = -Math.abs(b.vy) * 0.7; }
+      }
+
+      // 4. Resolve Elastic Ball-to-Ball Collisions & Record First Ball Struck by Cue Ball
+      const n = state.balls.length;
+      for (let i = 0; i < n; i++) {
+        const b1 = state.balls[i];
+        if (b1.pocketed) continue;
+
+        for (let j = i + 1; j < n; j++) {
+          const b2 = state.balls[j];
+          if (b2.pocketed) continue;
+
+          const dx = b2.x - b1.x;
+          const dy = b2.y - b1.y;
+          const minDist = b1.r + b2.r;
+          const distSq = dx * dx + dy * dy;
+
+          if (distSq < minDist * minDist && distSq > 0.00001) {
+            const dist = Math.sqrt(distSq);
+            const nx = dx / dist;
+            const ny = dy / dist;
+
+            // Separate overlapping balls immediately to prevent clipping
+            const overlap = (minDist - dist) * 0.5;
+            b1.x -= nx * overlap;
+            b1.y -= ny * overlap;
+            b2.x += nx * overlap;
+            b2.y += ny * overlap;
+
+            // Record first contact with cue ball for 8-ball foul rules
+            if (state.firstBallHitId === null) {
+              if (b1.id === 0) state.firstBallHitId = b2.id;
+              else if (b2.id === 0) state.firstBallHitId = b1.id;
+            }
+
+            // Relative velocity along normal
+            const rvx = b1.vx - b2.vx;
+            const rvy = b1.vy - b2.vy;
+            const velAlongNormal = rvx * nx + rvy * ny;
+
+            if (velAlongNormal > 0) {
+              const impulse = velAlongNormal * restitutionBall;
+              b1.vx -= impulse * nx;
+              b1.vy -= impulse * ny;
+              b2.vx += impulse * nx;
+              b2.vy += impulse * ny;
+
+              if (velAlongNormal > 25) {
+                sound.playBallHit(velAlongNormal);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    function handleBallPocketed(ball, pocket) {
+      ball.pocketed = true;
+      ball.vx = 0;
+      ball.vy = 0;
+      ball.sinking = { pocketX: pocket.x, pocketY: pocket.y, progress: 0 };
+      sound.playPocketDrop();
+
+      if (ball.id === 0) {
+        state.turnScratched = true;
+        addFloatingText("SCRATCH!", pocket.x, pocket.y, "#e74c3c");
+      } else {
+        state.turnPottedBalls.push(ball.id);
+        const tag = ball.id === 8
+          ? "8-BALL"
+          : `${ball.id} (${ball.id <= 7 ? "SOLID" : "STRIPE"})`;
+        addFloatingText(`POTTED ${tag}`, pocket.x, pocket.y, "#2ecc71");
+      }
+    }
+
+    function areAllBallsStopped() {
+      for (const b of state.balls) {
+        if (!b.pocketed && (Math.abs(b.vx) > 0.01 || Math.abs(b.vy) > 0.01)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /**
+     * Respawns a ball cleanly on the table (head spot for cue ball, foot spot for 8-ball on break).
+     */
+    function respawnBallAtSpot(ball, preferFootSpot = false) {
+      ball.pocketed = false;
+      ball.sinking = null;
+      ball.vx = 0;
+      ball.vy = 0;
+
+      const baseX = preferFootSpot ? TABLE.footSpotX : TABLE.headStringX;
+      const candidates = [
+        { x: baseX, y: TABLE.centerY },
+        { x: baseX, y: TABLE.centerY - 55 },
+        { x: baseX, y: TABLE.centerY + 55 },
+        { x: baseX - 45, y: TABLE.centerY },
+        { x: baseX + 45, y: TABLE.centerY },
+        { x: TABLE.left + 120, y: TABLE.centerY }
+      ];
+
+      for (const pos of candidates) {
+        if (isPositionFree(pos.x, pos.y, BALL_RADIUS * 2.2, ball.id)) {
+          ball.x = pos.x;
+          ball.y = pos.y;
+          return;
+        }
+      }
+
+      ball.x = baseX;
+      ball.y = TABLE.centerY;
+    }
+
+    function isPositionFree(x, y, clearance, ignoreId = 0) {
+      for (const b of state.balls) {
+        if (b.id === ignoreId || b.pocketed) continue;
+        if (Math.hypot(b.x - x, b.y - y) < clearance) return false;
+      }
+      return true;
+    }
+
+    /**
+     * =========================================================================
+     * 10. STANDARD 8-BALL TURN RESOLUTION, COMMENTARY & WIN CONDITIONS
+     * =========================================================================
+     */
+    function onTurnSettled() {
+      const shooterNum = state.currentPlayer;
+      const opponentNum = shooterNum === 1 ? 2 : 1;
+      const shooter = state.players[shooterNum];
+      const opponent = state.players[opponentNum];
+      const cueBall = getCueBall();
+
+      const wasBreak = state.isBreakShot;
+      state.isBreakShot = false;
+
+      // 1. Handle Cue Ball Scratch
+      if (state.turnScratched) {
+        shooter.scratches++;
+        respawnBallAtSpot(cueBall, false);
+      }
+
+      // 2. PRACTICE MODE RESOLUTION
+      if (state.mode === "practice") {
+        recomputePlayerScores();
+        generateShotCommentary(state.turnPottedBalls.length, state.turnScratched, null);
+
+        const remainingObjectBalls = state.balls.filter(b => b.id !== 0 && !b.pocketed);
+        if (remainingObjectBalls.length === 0) {
+          state.phase = "GAME_OVER";
+          updateHUD();
+          triggerGameOver(1, "You cleared all 15 balls in Practice Mode!");
+          return;
+        }
+
+        state.phase = "AIMING";
+        updateHUD();
+        updatePowerHUD();
+        return;
+      }
+
+      // 3. STANDARD 8-BALL VERSUS MODE RESOLUTION
+      const eightBallWasPocketed = state.turnPottedBalls.includes(8);
+      const shooterWasOnEight = state.turnShooterWasOnEight;
+
+      // Evaluate whether the first ball struck by the cue ball was legal
+      let foulReason = null;
+      if (state.turnScratched) {
+        foulReason = "Cue ball scratch!";
+      } else if (state.firstBallHitId === null) {
+        foulReason = "Foul — Cue ball failed to strike any ball!";
+      } else if (!wasBreak) {
+        if (state.tableOpen) {
+          if (state.firstBallHitId === 8) {
+            foulReason = "Foul — Struck the 8-Ball first on an open table!";
+          }
+        } else if (shooterWasOnEight) {
+          if (state.firstBallHitId !== 8) {
+            foulReason = "Foul — Must strike the 8-Ball first!";
+          }
+        } else {
+          // Shooter still had group balls on table when firing: must strike their own group first!
+          const hitGroup = getBallGroup(state.firstBallHitId);
+          if (hitGroup !== shooter.group) {
+            foulReason = `Foul — Struck ${hitGroup === "eight" ? "the 8-Ball" : hitGroup.toUpperCase()} first!`;
+          }
+        }
+      }
+
+      if (foulReason) {
+        shooter.fouls++;
+        addFloatingText("FOUL!", cueBall.x, cueBall.y - 20, "#e74c3c");
+      }
+
+      // Check 8-Ball Pocketed Cases
+      if (eightBallWasPocketed) {
+        if (wasBreak) {
+          // 8-ball pocketed on the break is spotted back on the foot spot
+          const eightBall = state.balls.find(b => b.id === 8);
+          if (eightBall) respawnBallAtSpot(eightBall, true);
+          addFloatingText("8-BALL SPOTTED", TABLE.footSpotX, TABLE.centerY, "#f0b429");
+        } else if (!shooterWasOnEight) {
+          // Sinking the 8-ball before clearing your group is an immediate loss!
+          recomputePlayerScores();
+          state.phase = "GAME_OVER";
+          updateHUD();
+          triggerGameOver(
+            opponentNum,
+            `${shooter.name} pocketed the 8-Ball early before clearing their group!`
+          );
+          return;
+        } else if (foulReason) {
+          // Sinking the 8-ball while scratching or fouling is an immediate loss!
+          recomputePlayerScores();
+          state.phase = "GAME_OVER";
+          updateHUD();
+          triggerGameOver(
+            opponentNum,
+            `${shooter.name} committed a foul (${foulReason}) while pocketing the 8-Ball!`
+          );
+          return;
+        } else {
+          // Legal 8-Ball pot after clearing group -> Shooter Wins!
+          recomputePlayerScores();
+          shooter.score = 8;
+          state.phase = "GAME_OVER";
+          updateHUD();
+          triggerGameOver(
+            shooterNum,
+            `${shooter.name} cleared their ${shooter.group.toUpperCase()} and legally sunk the 8-Ball!`
+          );
+          return;
+        }
+      }
+
+      // Check Open Table Group Assignment (after break, or on a legal pot when table is open)
+      const pottedSolids = state.turnPottedBalls.filter(id => id >= 1 && id <= 7);
+      const pottedStripes = state.turnPottedBalls.filter(id => id >= 9 && id <= 15);
+
+      let newlyAssignedGroup = null;
+      if (state.tableOpen && !wasBreak && !foulReason) {
+        if (pottedSolids.length > 0 && pottedStripes.length === 0) {
+          newlyAssignedGroup = "solids";
+        } else if (pottedStripes.length > 0 && pottedSolids.length === 0) {
+          newlyAssignedGroup = "stripes";
+        } else if (pottedSolids.length > 0 && pottedStripes.length > 0) {
+          // Both dropped on open table: assign whichever group matched first contact (or first dropped)
+          const firstHitGrp = getBallGroup(state.firstBallHitId);
+          newlyAssignedGroup = (firstHitGrp === "solids" || firstHitGrp === "stripes")
+            ? firstHitGrp
+            : getBallGroup(state.turnPottedBalls[0]);
+        }
+
+        if (newlyAssignedGroup) {
+          state.tableOpen = false;
+          shooter.group = newlyAssignedGroup;
+          opponent.group = newlyAssignedGroup === "solids" ? "stripes" : "solids";
+          addFloatingText(
+            `${shooter.name.toUpperCase()}: ${shooter.group.toUpperCase()}!`,
+            CANVAS_W / 2,
+            TABLE.centerY,
+            "#f0b429"
+          );
+        }
+      }
+
+      // Recompute each player's group score
+      recomputePlayerScores();
+
+      // Did the shooter legally pocket at least one valid ball for their turn?
+      let legalPot = false;
+      if (!foulReason) {
+        if (wasBreak || state.tableOpen) {
+          legalPot = (pottedSolids.length + pottedStripes.length) > 0;
+        } else if (shooter.group === "solids") {
+          legalPot = pottedSolids.length > 0;
+        } else if (shooter.group === "stripes") {
+          legalPot = pottedStripes.length > 0;
+        }
+      }
+
+      generateShotCommentary(state.turnPottedBalls.length, state.turnScratched, foulReason, newlyAssignedGroup, shooter);
+
+      // Switch turns if shooter fouled or failed to legally pocket one of their own balls
+      if (foulReason || !legalPot) {
+        state.currentPlayer = opponentNum;
+        state.currentWeaponKey = state.currentPlayer === 1 ? state.p1WeaponKey : state.p2WeaponKey;
+      }
+
+      // IMPORTANT: Set phase BEFORE calling updateHUD() so [ Change Stick ] is enabled for human turns!
+      if (state.mode === "ai" && state.currentPlayer === 2) {
+        beginAITurn();
+      } else {
+        state.phase = "AIMING";
+      }
+
+      updateHUD();
+      updatePowerHUD();
+    }
+
+    function generateShotCommentary(pottedCount, scratched, foulReason, newlyAssignedGroup, shooter) {
+      const weaponKey = state.currentWeaponKey;
+
+      if (newlyAssignedGroup && shooter) {
+        setCommentary(
+          `${shooter.name} claims ${newlyAssignedGroup.toUpperCase()} with the ${WEAPONS[weaponKey].name}! The table is now locked in.`
+        );
+        return;
+      }
+
+      if (foulReason && !scratched) {
+        setCommentary(`${foulReason} Possession passes to the other shooter.`);
+        return;
+      }
+
+      let pool = [];
+      if (scratched) {
+        pool = EVENT_COMMENTARY.scratch;
+      } else if (pottedCount >= 2) {
+        pool = EVENT_COMMENTARY.multiPot.concat(WEAPON_SPECIFIC_COMMENTARY[weaponKey]);
+      } else if (pottedCount === 1) {
+        pool = EVENT_COMMENTARY.singlePot.concat(WEAPON_SPECIFIC_COMMENTARY[weaponKey], GENERAL_COMMENTARY);
+      } else {
+        pool = WEAPON_SPECIFIC_COMMENTARY[weaponKey].concat(GENERAL_COMMENTARY);
+      }
+
+      const line = pool[Math.floor(Math.random() * pool.length)];
+      setCommentary(line);
+    }
+
+    function setCommentary(text) {
+      document.getElementById("commentaryText").textContent = `"${text}"`;
+    }
+
+    function triggerGameOver(winnerPlayerNum, reasonText) {
+      state.phase = "GAME_OVER";
+      const modal = document.getElementById("winnerModal");
+      const headline = document.getElementById("winnerHeadline");
+      const subtext = document.getElementById("winnerSubtext");
+      const table = document.getElementById("matchStatsTable");
+
+      const p1 = state.players[1];
+      const p2 = state.players[2];
+
+      if (state.mode === "practice") {
+        headline.textContent = "Table Cleared!";
+        subtext.textContent = `You cleared all 15 balls in ${p1.shots} shots using regulation firearms.`;
+        table.innerHTML = `
+          <thead>
+            <tr><th>Metric</th><th style="text-align:right">Performance</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Balls Pocketed</td><td class="num">${p1.score} / 15</td></tr>
+            <tr><td>Total Shots Fired</td><td class="num">${p1.shots}</td></tr>
+            <tr><td>Balls Per Shot</td><td class="num">${(p1.score / Math.max(1, p1.shots)).toFixed(2)}</td></tr>
+            <tr><td>Ballistic Scratches</td><td class="num">${p1.scratches}</td></tr>
+            <tr><td>Favorite Stick</td><td class="num">${getFavoriteStickName(p1.weaponUsage)}</td></tr>
+          </tbody>
+        `;
+      } else {
+        const winner = state.players[winnerPlayerNum];
+        headline.textContent = `${winner.name} Wins!`;
+        subtext.textContent = reasonText;
+
+        const p1GroupLabel = p1.group ? p1.group.toUpperCase() : "OPEN";
+        const p2GroupLabel = p2.group ? p2.group.toUpperCase() : "OPEN";
+
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Statistic</th>
+              <th style="text-align:right">${p1.name} (${p1GroupLabel})</th>
+              <th style="text-align:right">${p2.name} (${p2GroupLabel})</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Group Balls Cleared</td>
+              <td class="num">${Math.min(7, p1.score)} / 7</td>
+              <td class="num">${Math.min(7, p2.score)} / 7</td>
+            </tr>
+            <tr>
+              <td>Total Trigger Pulls</td>
+              <td class="num">${p1.shots}</td>
+              <td class="num">${p2.shots}</td>
+            </tr>
+            <tr>
+              <td>Fouls / Scratches</td>
+              <td class="num">${p1.fouls}</td>
+              <td class="num">${p2.fouls}</td>
+            </tr>
+            <tr>
+              <td>Favorite Stick</td>
+              <td class="num">${getFavoriteStickName(p1.weaponUsage)}</td>
+              <td class="num">${getFavoriteStickName(p2.weaponUsage)}</td>
+            </tr>
+          </tbody>
+        `;
+      }
+
+      modal.classList.add("open");
+    }
+
+    function getFavoriteStickName(usageMap) {
+      let bestKey = "pistol9mm";
+      let bestCount = -1;
+      for (const k of Object.keys(usageMap)) {
+        if (usageMap[k] > bestCount) {
+          bestCount = usageMap[k];
+          bestKey = k;
+        }
+      }
+      return bestCount > 0 ? WEAPONS[bestKey].name : "9mm Pistol";
+    }
+
+    /**
+     * =========================================================================
+     * 11. COMPUTER AI DECISION ENGINE (STRICT STANDARD 8-BALL RULES)
+     * =========================================================================
+     * The AI:
+     * - Strictly targets ONLY its assigned group (Solids 1-7 or Stripes 9-15),
+     *   or the 8-Ball once all 7 of its group are pocketed.
+     * - Checks via raycast that the path to the ghost ball does not strike an
+     *   opponent's ball or the 8-ball first.
+     * - Selects the firearm whose fixed power best matches the shot distance.
+     */
+    function beginAITurn() {
+      state.phase = "AI_THINKING";
+      state.aiTimer = 1.2;
+
+      const cueBall = getCueBall();
+      const aiPlayer = state.players[2];
+
+      // Determine strictly legal target balls for Computer (Player 2)
+      const legalTargets = state.balls.filter(
+        b => !b.pocketed && isLegalTargetBallForPlayer(b.id, 2)
+      );
+
+      let bestShot = null;
+      let bestScore = -Infinity;
+
+      for (const ball of legalTargets) {
+        for (const pocket of POCKETS) {
+          // Vector from target ball to pocket
+          const toPocketX = pocket.x - ball.x;
+          const toPocketY = pocket.y - ball.y;
+          const distBallToPocket = Math.hypot(toPocketX, toPocketY);
+          const dirX = toPocketX / distBallToPocket;
+          const dirY = toPocketY / distBallToPocket;
+
+          // Ghost ball contact point
+          const ghostX = ball.x - dirX * (BALL_RADIUS * 2);
+          const ghostY = ball.y - dirY * (BALL_RADIUS * 2);
+
+          // Vector from cue ball to ghost ball
+          const toGhostX = ghostX - cueBall.x;
+          const toGhostY = ghostY - cueBall.y;
+          const distCueToGhost = Math.hypot(toGhostX, toGhostY);
+          if (distCueToGhost < 1) continue;
+
+          const aimDirX = toGhostX / distCueToGhost;
+          const aimDirY = toGhostY / distCueToGhost;
+
+          // Cut angle cosine (1.0 = straight-in shot, < 0.22 = too thin)
+          const cutAlignment = aimDirX * dirX + aimDirY * dirY;
+          if (cutAlignment <= 0.22) continue;
+
+          // Verify cue ball won't hit an illegal ball first along this aim line
+          const rayHit = raycastCueBall(cueBall.x, cueBall.y, aimDirX, aimDirY);
+          if (!rayHit.targetBall) continue;
+          if (!isLegalTargetBallForPlayer(rayHit.targetBall.id, 2)) continue;
+
+          // Strongly prefer unobstructed direct hit on the intended ball
+          const isDirectHit = rayHit.targetBall.id === ball.id;
+          const candidateScore =
+            (isDirectHit ? 500 : 120) +
+            cutAlignment * 380 -
+            distCueToGhost * 0.45 -
+            distBallToPocket * 0.35;
+
+          if (candidateScore > bestScore) {
+            bestScore = candidateScore;
+            bestShot = {
+              ball,
+              angle: Math.atan2(toGhostY, toGhostX),
+              distCueToGhost,
+              distBallToPocket,
+              cutAlignment
+            };
+          }
+        }
+      }
+
+      // Fallback if all pocket cuts are blocked: aim at a legal ball that has a clear line of sight
+      if (!bestShot && legalTargets.length > 0) {
+        for (const t of legalTargets) {
+          const ang = Math.atan2(t.y - cueBall.y, t.x - cueBall.x);
+          const rayHit = raycastCueBall(cueBall.x, cueBall.y, Math.cos(ang), Math.sin(ang));
+          if (rayHit.targetBall && isLegalTargetBallForPlayer(rayHit.targetBall.id, 2)) {
+            const d = Math.hypot(t.x - cueBall.x, t.y - cueBall.y);
+            bestShot = {
+              ball: t,
+              angle: ang,
+              distCueToGhost: d,
+              distBallToPocket: 250,
+              cutAlignment: 0.5
+            };
+            break;
+          }
+        }
+
+        // Last resort if completely snookered: aim at nearest legal ball
+        if (!bestShot) {
+          let nearest = legalTargets[0];
+          let minD = Infinity;
+          for (const t of legalTargets) {
+            const d = Math.hypot(t.x - cueBall.x, t.y - cueBall.y);
+            if (d < minD) { minD = d; nearest = t; }
+          }
+          bestShot = {
+            ball: nearest,
+            angle: Math.atan2(nearest.y - cueBall.y, nearest.x - cueBall.x),
+            distCueToGhost: minD,
+            distBallToPocket: 250,
+            cutAlignment: 0.4
+          };
+        }
+      }
+
+      // Choose the firearm whose fixed power best suits the shot (since power depends on weapon!)
+      let chosenWeapon = "magnum357";
+      const totalDist = bestShot ? (bestShot.distCueToGhost + bestShot.distBallToPocket) : 400;
+      const roll = Math.random();
+
+      if (isPlayerOnEightBall(2)) {
+        // When shooting at the 8-ball, AI prefers high-accuracy sticks
+        chosenWeapon = totalDist < 180 ? "targetPistol22" : totalDist < 360 ? "pistol9mm" : totalDist > 640 ? "sniperRifle" : "desertEagle50";
+      } else if (totalDist < 170) {
+        chosenWeapon = "targetPistol22"; // 2/10 feather tap for close lips & tight safeties
+      } else if (totalDist < 330) {
+        chosenWeapon = "pistol9mm";      // 4/10 fixed power for short finesse shots
+      } else if (totalDist > 680 && roll < 0.6) {
+        chosenWeapon = "sniperRifle";    // 10/10 laser power for long cross-table shots
+      } else if (totalDist > 480 && roll < 0.45) {
+        chosenWeapon = "desertEagle50";  // 9/10 heavy handgun punch
+      } else if (legalTargets.length >= 6 && bestShot && bestShot.cutAlignment < 0.45 && roll < 0.4) {
+        chosenWeapon = "shotgun";        // 9/10 shotgun to break up congested clusters
+      } else if (roll < 0.25) {
+        chosenWeapon = "submachineGun";  // 6/10 5-round rapid chatter
+      } else if (roll < 0.45) {
+        chosenWeapon = "assaultRifle";   // 8/10 3-round burst
+      } else {
+        chosenWeapon = "magnum357";      // 7/10 balanced revolver
+      }
+
+      // Entertainment factor: small percentage chance the AI deliberately makes a bold, suboptimal stick choice
+      const wildRoll = Math.random();
+      let wildChoiceCommentary = null;
+      if (wildRoll < 0.05) {
+        chosenWeapon = "shotgun";
+        wildChoiceCommentary = "Wait a minute—the Computer is pulling out the 12-gauge Shotgun here! The crowd is on its feet!";
+      } else if (wildRoll < 0.10) {
+        chosenWeapon = "sniperRifle";
+        wildChoiceCommentary = "An audacious decision by the Computer, bringing out the .50-cal Sniper Rifle for pure intimidation.";
+      } else if (wildRoll < 0.15) {
+        chosenWeapon = "desertEagle50";
+        wildChoiceCommentary = "Bold call from the Computer—going straight for the Desert Eagle .50 AE hand-cannon on this shot!";
+      }
+
+      state.p2WeaponKey = chosenWeapon;
+      state.currentWeaponKey = chosenWeapon;
+      updateHUD();
+      updatePowerHUD();
+
+      const groupLabel = aiPlayer.group
+        ? aiPlayer.group.toUpperCase()
+        : (isPlayerOnEightBall(2) ? "8-BALL" : "OPEN TABLE");
+      if (wildChoiceCommentary) {
+        setCommentary(wildChoiceCommentary);
+      } else {
+        setCommentary(`Computer selects the ${WEAPONS[chosenWeapon].name} (${WEAPONS[chosenWeapon].power}/10 Power) targeting ${groupLabel}.`);
+      }
+
+      state.aiPlannedAngle = bestShot ? bestShot.angle : 0;
+    }
+
+    function updateAI(dt) {
+      if (state.phase !== "AI_THINKING") return;
+
+      // Smoothly rotate aim toward planned angle so player sees the AI lining up
+      const diff = normalizeAngle(state.aiPlannedAngle - state.aimAngle);
+      state.aimAngle += diff * Math.min(1, dt * 7);
+
+      state.aiTimer -= dt;
+      if (state.aiTimer <= 0) {
+        state.aimAngle = state.aiPlannedAngle + (Math.random() - 0.5) * 0.018;
+        fireWeapon(state.aimAngle);
+      }
+    }
+
+    function normalizeAngle(a) {
+      while (a > Math.PI) a -= Math.PI * 2;
+      while (a < -Math.PI) a += Math.PI * 2;
+      return a;
+    }
+
+    /**
+     * =========================================================================
+     * 12. RENDERING: POOL TABLE, BALLS, AIM GUIDES, FIREARMS & HUD
+     * =========================================================================
+     */
+    function render() {
+      ctx.save();
+
+      // Apply screen shake based on weapon power
+      if (state.screenShake > 0.2) {
+        const dx = (Math.random() - 0.5) * state.screenShake * 1.6;
+        const dy = (Math.random() - 0.5) * state.screenShake * 1.6;
+        ctx.translate(dx, dy);
+      }
+
+      drawTable();
+      drawAimGuide();
+      drawShellCasings();
+      drawBalls();
+      drawBullets();
+      drawParticles();
+      drawFirearmStick();
+      drawFloatingTexts();
+
+      ctx.restore();
+    }
+
+    function drawTable() {
+      const railGrad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
+      railGrad.addColorStop(0, "#4a2511");
+      railGrad.addColorStop(0.5, "#361a0c");
+      railGrad.addColorStop(1, "#241007");
+      ctx.fillStyle = railGrad;
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      ctx.strokeStyle = "#7c5832";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(10, 10, CANVAS_W - 20, CANVAS_H - 20);
+
+      const cushionMargin = 16;
+      ctx.fillStyle = "#0e512f";
+      ctx.fillRect(
+        TABLE.left - cushionMargin,
+        TABLE.top - cushionMargin,
+        TABLE.width + cushionMargin * 2,
+        TABLE.height + cushionMargin * 2
+      );
+
+      const feltGrad = ctx.createRadialGradient(
+        CANVAS_W / 2, CANVAS_H / 2, 40,
+        CANVAS_W / 2, CANVAS_H / 2, 620
+      );
+      feltGrad.addColorStop(0, "#1b8a4e");
+      feltGrad.addColorStop(1, "#116638");
+      ctx.fillStyle = feltGrad;
+      ctx.fillRect(TABLE.left, TABLE.top, TABLE.width, TABLE.height);
+
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.16)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(TABLE.headStringX, TABLE.top);
+      ctx.lineTo(TABLE.headStringX, TABLE.bottom);
+      ctx.stroke();
+
+      ctx.fillStyle = "rgba(255, 255, 255, 0.28)";
+      ctx.beginPath();
+      ctx.arc(TABLE.footSpotX, TABLE.centerY, 3.2, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = "rgba(0, 0, 0, 0.35)";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(TABLE.left, TABLE.top, TABLE.width, TABLE.height);
+
+      ctx.fillStyle = "#e5c158";
+      const diamondSections = 8;
+      for (let i = 1; i < diamondSections; i++) {
+        if (i === 4) continue;
+        const x = TABLE.left + (TABLE.width / diamondSections) * i;
+        drawDiamond(x, TABLE.top - 34, 4.5);
+        drawDiamond(x, TABLE.bottom + 34, 4.5);
+      }
+      for (let j = 1; j < 4; j++) {
+        const y = TABLE.top + (TABLE.height / 4) * j;
+        drawDiamond(TABLE.left - 36, y, 4.5);
+        drawDiamond(TABLE.right + 36, y, 4.5);
+      }
+
+      for (const p of POCKETS) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r + 5, 0, Math.PI * 2);
+        ctx.fillStyle = "#1c130e";
+        ctx.fill();
+
+        const pGrad = ctx.createRadialGradient(p.x, p.y, 4, p.x, p.y, p.r);
+        pGrad.addColorStop(0, "#030507");
+        pGrad.addColorStop(1, "#121820");
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = pGrad;
+        ctx.fill();
+      }
+    }
+
+    function drawDiamond(x, y, size) {
+      ctx.beginPath();
+      ctx.moveTo(x, y - size);
+      ctx.lineTo(x + size, y);
+      ctx.lineTo(x, y + size);
+      ctx.lineTo(x - size, y);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    /**
+     * Draws the aiming trajectory, ghost ball preview, legal/foul target indicator,
+     * and weapon accuracy spread cone.
+     */
+    function drawAimGuide() {
+      if (state.phase !== "AIMING" && state.phase !== "SIGHTING" && state.phase !== "AI_THINKING") {
+        return;
+      }
+
+      const cueBall = getCueBall();
+      if (!cueBall || cueBall.pocketed) return;
+
+      const weapon = getActiveWeapon();
+      const angle = state.aimAngle;
+      const dirX = Math.cos(angle);
+      const dirY = Math.sin(angle);
+
+      const hit = raycastCueBall(cueBall.x, cueBall.y, dirX, dirY);
+      const isLegalHit = !hit.targetBall || state.isBreakShot || isLegalTargetBallForPlayer(hit.targetBall.id, state.currentPlayer);
+
+      ctx.save();
+
+      // 1. If weapon has pellet spread / inaccuracy, draw the spread cone
+      if (weapon.spreadRad > 0.005) {
+        const coneLen = Math.min(hit.dist, 420);
+        ctx.beginPath();
+        ctx.moveTo(cueBall.x, cueBall.y);
+        ctx.arc(
+          cueBall.x,
+          cueBall.y,
+          coneLen,
+          angle - weapon.spreadRad,
+          angle + weapon.spreadRad
+        );
+        ctx.closePath();
+        ctx.fillStyle = weapon.id === "shotgun"
+          ? "rgba(231, 76, 60, 0.14)"
+          : "rgba(240, 180, 41, 0.11)";
+        ctx.fill();
+
+        ctx.strokeStyle = weapon.id === "shotgun"
+          ? "rgba(231, 76, 60, 0.35)"
+          : "rgba(240, 180, 41, 0.28)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // 2. Center Aim Line
+      ctx.beginPath();
+      ctx.moveTo(cueBall.x, cueBall.y);
+      ctx.lineTo(hit.x, hit.y);
+
+      if (!isLegalHit) {
+        ctx.setLineDash([5, 5]);
+        ctx.strokeStyle = "rgba(231, 76, 60, 0.85)";
+        ctx.lineWidth = 2;
+      } else if (weapon.id === "sniperRifle") {
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.85)";
+        ctx.lineWidth = 2;
+      } else {
+        ctx.setLineDash([6, 6]);
+        ctx.strokeStyle = state.isSighting ? "rgba(255, 255, 255, 0.9)" : "rgba(255, 255, 255, 0.65)";
+        ctx.lineWidth = state.isSighting ? 2.0 : 1.6;
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 3. Ghost Ball & Target Ball Direction Indicator (for accurate weapons)
+      if (weapon.accuracy >= 6) {
+        ctx.beginPath();
+        ctx.arc(hit.x, hit.y, BALL_RADIUS, 0, Math.PI * 2);
+        ctx.strokeStyle = isLegalHit ? "rgba(255, 255, 255, 0.6)" : "rgba(231, 76, 60, 0.9)";
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+
+        if (hit.targetBall) {
+          if (isLegalHit) {
+            const nx = (hit.targetBall.x - hit.x) / (BALL_RADIUS * 2);
+            const ny = (hit.targetBall.y - hit.y) / (BALL_RADIUS * 2);
+            ctx.beginPath();
+            ctx.moveTo(hit.targetBall.x, hit.targetBall.y);
+            ctx.lineTo(
+              hit.targetBall.x + nx * 95,
+              hit.targetBall.y + ny * 95
+            );
+            ctx.strokeStyle = "rgba(240, 180, 41, 0.78)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+          } else {
+            ctx.font = "700 11px sans-serif";
+            ctx.fillStyle = "#fca5a5";
+            ctx.textAlign = "center";
+            ctx.fillText("WRONG GROUP (FOUL)", hit.x, hit.y - 18);
+          }
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function raycastCueBall(startX, startY, dirX, dirY) {
+      let minT = 1200;
+      let hitBall = null;
+
+      if (dirX < -0.0001) minT = Math.min(minT, (TABLE.left + BALL_RADIUS - startX) / dirX);
+      if (dirX > 0.0001)  minT = Math.min(minT, (TABLE.right - BALL_RADIUS - startX) / dirX);
+      if (dirY < -0.0001) minT = Math.min(minT, (TABLE.top + BALL_RADIUS - startY) / dirY);
+      if (dirY > 0.0001)  minT = Math.min(minT, (TABLE.bottom - BALL_RADIUS - startY) / dirY);
+
+      const twoR = BALL_RADIUS * 2;
+      for (const b of state.balls) {
+        if (b.id === 0 || b.pocketed) continue;
+        const ox = b.x - startX;
+        const oy = b.y - startY;
+        const proj = ox * dirX + oy * dirY;
+        if (proj <= 0) continue;
+
+        const perpSq = (ox * ox + oy * oy) - proj * proj;
+        if (perpSq < twoR * twoR) {
+          const thc = Math.sqrt(twoR * twoR - perpSq);
+          const t = proj - thc;
+          if (t > 0 && t < minT) {
+            minT = t;
+            hitBall = b;
+          }
+        }
+      }
+
+      return {
+        x: startX + dirX * minT,
+        y: startY + dirY * minT,
+        dist: minT,
+        targetBall: hitBall
+      };
+    }
+
+    function drawBalls() {
+      for (const b of state.balls) {
+        if (b.pocketed && !b.sinking) continue;
+
+        let scale = 1;
+        if (b.sinking) {
+          scale = Math.max(0.1, 1 - b.sinking.progress * 0.85);
+        }
+
+        const r = b.r * scale;
+        ctx.save();
+        ctx.translate(b.x, b.y);
+
+        ctx.beginPath();
+        ctx.arc(2.5, 3.5, r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0, 0, 0, 0.38)";
+        ctx.fill();
+
+        const baseColor = BALL_COLORS[b.id];
+        const isStripe = b.id >= 9 && b.id <= 15;
+
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fillStyle = isStripe ? "#f8fafc" : baseColor;
+        ctx.fill();
+
+        if (isStripe) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(0, 0, r, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.fillStyle = baseColor;
+          ctx.fillRect(-r, -r * 0.56, r * 2, r * 1.12);
+          ctx.restore();
+        }
+
+        if (b.id > 0) {
+          ctx.beginPath();
+          ctx.arc(0, 0, r * 0.46, 0, Math.PI * 2);
+          ctx.fillStyle = "#ffffff";
+          ctx.fill();
+
+          ctx.fillStyle = "#0f172a";
+          ctx.font = `800 ${Math.round(r * 0.62)}px sans-serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(String(b.id), 0, 0.5);
+        }
+
+        const shade = ctx.createRadialGradient(-r * 0.32, -r * 0.32, r * 0.1, 0, 0, r);
+        shade.addColorStop(0, "rgba(255, 255, 255, 0.42)");
+        shade.addColorStop(0.35, "rgba(255, 255, 255, 0.0)");
+        shade.addColorStop(1, "rgba(0, 0, 0, 0.38)");
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fillStyle = shade;
+        ctx.fill();
+
+        ctx.restore();
+      }
+    }
+
+    function drawFirearmStick() {
+      if (state.phase === "SIMULATING" || state.phase === "GAME_OVER") return;
+      const cueBall = getCueBall();
+      if (!cueBall || cueBall.pocketed) return;
+
+      const weapon = getActiveWeapon();
+      const sightPullBack = state.isSighting ? 8 : 0;
+      const distFromBall = BALL_RADIUS + 26 + sightPullBack + state.recoilOffset;
+
+      ctx.save();
+      ctx.translate(cueBall.x, cueBall.y);
+      ctx.rotate(state.aimAngle);
+      ctx.translate(-distFromBall, 0);
+
+      ctx.shadowColor = "rgba(0, 0, 0, 0.6)";
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 4;
+
+      switch (weapon.id) {
+        case "pistol9mm": {
+          ctx.fillStyle = "#1e293b";
+          ctx.fillRect(-34, -4, 14, 11);
+          ctx.fillStyle = "#475569";
+          ctx.fillRect(-32, -4, 32, 8);
+          ctx.fillStyle = "#f8fafc";
+          ctx.fillRect(-30, -5, 3, 2);
+          ctx.fillRect(-4, -5, 3, 2);
+          break;
+        }
+        case "magnum357": {
+          ctx.fillStyle = "#7c2d12";
+          ctx.fillRect(-48, -5, 16, 12);
+          ctx.fillStyle = "#94a3b8";
+          ctx.fillRect(-34, -6, 14, 12);
+          ctx.fillStyle = "#cbd5e1";
+          ctx.fillRect(-20, -3.5, 20, 7);
+          break;
+        }
+        case "shotgun": {
+          ctx.fillStyle = "#78350f";
+          ctx.fillRect(-82, -5, 30, 10);
+          ctx.fillStyle = "#334155";
+          ctx.fillRect(-52, -5, 20, 10);
+          ctx.fillStyle = "#1e293b";
+          ctx.fillRect(-32, -4.5, 32, 9);
+          ctx.fillStyle = "#92400e";
+          ctx.fillRect(-26, -6, 16, 12);
+          break;
+        }
+        case "assaultRifle": {
+          ctx.fillStyle = "#1e293b";
+          ctx.fillRect(-86, -4.5, 24, 9);
+          ctx.fillStyle = "#334155";
+          ctx.fillRect(-62, -6, 28, 12);
+          ctx.fillStyle = "#0f172a";
+          ctx.fillRect(-48, 5, 9, 10);
+          ctx.fillStyle = "#475569";
+          ctx.fillRect(-34, -4, 20, 8);
+          ctx.fillStyle = "#1e293b";
+          ctx.fillRect(-14, -2.5, 14, 5);
+          break;
+        }
+        case "sniperRifle": {
+          ctx.fillStyle = "#3f6212";
+          ctx.fillRect(-110, -5, 36, 10);
+          ctx.fillStyle = "#1e293b";
+          ctx.fillRect(-74, -5.5, 30, 11);
+          ctx.fillStyle = "#0f172a";
+          ctx.fillRect(-70, -9, 28, 4.5);
+          ctx.fillStyle = "#475569";
+          ctx.fillRect(-44, -3, 38, 6);
+          ctx.fillStyle = "#0f172a";
+          ctx.fillRect(-6, -5, 6, 10);
+          break;
+        }
+        case "targetPistol22": {
+          // Ergonomic target walnut grip
+          ctx.fillStyle = "#854d0e";
+          ctx.fillRect(-36, -3, 12, 12);
+          // Sleek matte competition barrel & receiver
+          ctx.fillStyle = "#64748b";
+          ctx.fillRect(-38, -3, 38, 5);
+          // Target barrel counterweight
+          ctx.fillStyle = "#334155";
+          ctx.fillRect(-14, -4.5, 10, 8);
+          // Competition blade sight
+          ctx.fillStyle = "#f8fafc";
+          ctx.fillRect(-4, -5.5, 2.5, 2.5);
+          break;
+        }
+        case "desertEagle50": {
+          // Combat grip
+          ctx.fillStyle = "#0f172a";
+          ctx.fillRect(-44, -5, 16, 13);
+          // Massive brushed chrome stepped slide
+          ctx.fillStyle = "#e2e8f0";
+          ctx.fillRect(-40, -5.5, 40, 10);
+          // Triangular barrel flat
+          ctx.fillStyle = "#94a3b8";
+          ctx.fillRect(-22, -3.5, 20, 6);
+          // Combat sights
+          ctx.fillStyle = "#1e293b";
+          ctx.fillRect(-38, -7, 4, 2);
+          ctx.fillRect(-4, -7, 3, 2);
+          break;
+        }
+        case "submachineGun": {
+          // Wire stock & rear grip
+          ctx.fillStyle = "#1e293b";
+          ctx.fillRect(-54, -4, 16, 11);
+          // Boxy tactical receiver
+          ctx.fillStyle = "#334155";
+          ctx.fillRect(-44, -5, 34, 9);
+          // Downward stick magazine
+          ctx.fillStyle = "#0f172a";
+          ctx.fillRect(-32, 4, 7, 13);
+          // Short barrel & muzzle shroud
+          ctx.fillStyle = "#475569";
+          ctx.fillRect(-10, -3, 10, 5);
+          break;
+        }
+      }
+
+      ctx.restore();
+    }
+
+    function drawBullets() {
+      for (const bul of state.bullets) {
+        ctx.save();
+        ctx.strokeStyle = "#fef08a";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(bul.x, bul.y);
+        ctx.lineTo(bul.x - Math.cos(bul.angle) * 16, bul.y - Math.sin(bul.angle) * 16);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    function drawParticles() {
+      for (const p of state.particles) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, Math.min(1, p.life));
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function drawShellCasings() {
+      for (const s of state.shells) {
+        ctx.save();
+        ctx.translate(s.x, s.y);
+        ctx.rotate(s.rot);
+        ctx.fillStyle = s.color;
+        ctx.fillRect(-s.length / 2, -s.width / 2, s.length, s.width);
+        ctx.strokeStyle = "rgba(0,0,0,0.45)";
+        ctx.lineWidth = 0.8;
+        ctx.strokeRect(-s.length / 2, -s.width / 2, s.length, s.width);
+        ctx.restore();
+      }
+    }
+
+    function drawFloatingTexts() {
+      for (const ft of state.floatingTexts) {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, Math.min(1, ft.life));
+        ctx.font = "800 15px sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillStyle = ft.color;
+        ctx.shadowColor = "rgba(0,0,0,0.85)";
+        ctx.shadowBlur = 4;
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+      }
+    }
+
+    /**
+     * =========================================================================
+     * 13. HUD & WEAPON SELECTION MENU UPDATES
+     * =========================================================================
+     */
+    function formatPlayerGroupTag(playerNum) {
+      if (state.mode === "practice") {
+        return `Shots: ${state.players[1].shots}`;
+      }
+      if (state.tableOpen) {
+        return "Open Table";
+      }
+      if (isPlayerOnEightBall(playerNum)) {
+        return "Target: 8-Ball";
+      }
+      const grp = state.players[playerNum].group;
+      return grp === "solids" ? "Solids (1-7)" : "Stripes (9-15)";
+    }
+
+    function updateHUD() {
+      const weapon = getActiveWeapon();
+      document.getElementById("currentStickName").textContent = weapon.name;
+      document.getElementById("currentStickMiniStats").innerHTML = `
+        <span>PWR <strong>${weapon.power}/10</strong></span>
+        <span>ACC <strong>${weapon.accuracy}/10</strong></span>
+        <span>CTRL <strong>${weapon.control}/10</strong></span>
+      `;
+
+      // Enable [ Change Stick ] whenever a human player is ready to shoot
+      const canChangeStick = canHumanShoot();
+      document.getElementById("changeStickBtn").disabled = !canChangeStick;
+
+      // Scoreboard cards
+      const p1Card = document.getElementById("p1Card");
+      const p2Card = document.getElementById("p2Card");
+      const vsDivider = document.getElementById("vsDivider");
+
+      document.getElementById("p1Name").textContent = state.players[1].name;
+      document.getElementById("p1Score").textContent =
+        state.mode === "practice" ? `${state.players[1].score}/15` : `${state.players[1].score}/7`;
+      document.getElementById("p1Tag").textContent = formatPlayerGroupTag(1);
+
+      if (state.mode === "practice") {
+        p2Card.style.display = "none";
+        vsDivider.style.display = "none";
+        p1Card.classList.add("active");
+      } else {
+        p2Card.style.display = "flex";
+        vsDivider.style.display = "inline";
+        document.getElementById("p2Name").textContent = state.players[2].name;
+        document.getElementById("p2Score").textContent = `${state.players[2].score}/7`;
+        document.getElementById("p2Tag").textContent = formatPlayerGroupTag(2);
+
+        p1Card.classList.toggle("active", state.currentPlayer === 1);
+        p2Card.classList.toggle("active", state.currentPlayer === 2);
+      }
+    }
+
+    /**
+     * Shot Power is strictly determined by the selected firearm's power rating.
+     */
+    function updatePowerHUD() {
+      const weapon = getActiveWeapon();
+      const fill = document.getElementById("powerBarFill");
+      const valText = document.getElementById("powerValueText");
+      const label = document.getElementById("shotStatusLabel");
+
+      if (state.phase === "SIMULATING" || state.phase === "FIRING_BURST") {
+        label.textContent = "Balls Rolling...";
+      } else if (state.phase === "AI_THINKING") {
+        label.textContent = "CPU Aiming...";
+      } else {
+        label.textContent = "Stick Power";
+      }
+
+      const pct = weapon.power * 10;
+      fill.style.width = `${pct}%`;
+      valText.textContent = `${weapon.power}/10`;
+    }
+
+    function renderWeaponModalList() {
+      const container = document.getElementById("weaponListContainer");
+      container.innerHTML = "";
+
+      for (const key of WEAPON_KEYS) {
+        const w = WEAPONS[key];
+        const isSelected = key === state.currentWeaponKey;
+
+        const card = document.createElement("div");
+        card.className = `weapon-option ${isSelected ? "selected" : ""}`;
+        card.innerHTML = `
+          <div class="weapon-top-row">
+            <div class="weapon-name-block">
+              <div class="weapon-name">${w.name}</div>
+              <div class="weapon-badges-row">
+                <span class="weapon-badge">${w.badge}</span>
+                <span class="difficulty-badge ${w.difficultyClass}">Difficulty: ${w.difficulty}</span>
+              </div>
+            </div>
+            ${isSelected ? '<span class="weapon-equipped-tag">✓ CURRENT STICK</span>' : ""}
+          </div>
+          <div class="weapon-desc">${w.notes}</div>
+          <div class="weapon-stats-grid">
+            <div class="stat-item">
+              <div class="stat-header"><span>PWR</span><span>${w.power}/10</span></div>
+              <div class="stat-meter">
+                <div class="stat-meter-fill" style="width:${w.power * 10}%;background:#e74c3c;"></div>
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-header"><span>ACC</span><span>${w.accuracy}/10</span></div>
+              <div class="stat-meter">
+                <div class="stat-meter-fill" style="width:${w.accuracy * 10}%;background:#3498db;"></div>
+              </div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-header"><span>CTRL</span><span>${w.control}/10</span></div>
+              <div class="stat-meter">
+                <div class="stat-meter-fill" style="width:${w.control * 10}%;background:#2ecc71;"></div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        card.addEventListener("click", () => {
+          state.currentWeaponKey = key;
+          if (state.currentPlayer === 1) {
+            state.p1WeaponKey = key;
+          } else {
+            state.p2WeaponKey = key;
+          }
+          updateHUD();
+          updatePowerHUD();
+          document.getElementById("stickModal").classList.remove("open");
+
+          const lines = WEAPON_SPECIFIC_COMMENTARY[key];
+          if (lines && lines.length > 0) {
+            setCommentary(lines[Math.floor(Math.random() * lines.length)]);
+          }
+        });
+
+        container.appendChild(card);
+      }
+    }
+
+    function renderStickHelpGuide() {
+      const grid = document.getElementById("stickHelpGrid");
+      grid.innerHTML = "";
+
+      for (const key of WEAPON_KEYS) {
+        const w = WEAPONS[key];
+        const item = document.createElement("div");
+        item.className = "help-stick-card";
+        item.innerHTML = `
+          <div class="help-stick-header">
+            <div class="help-stick-title">${w.name}</div>
+            <span class="difficulty-badge ${w.difficultyClass}">Difficulty: ${w.difficulty}</span>
+          </div>
+          <div class="help-stick-stats">PWR ${w.power}/10 • ACC ${w.accuracy}/10 • CTRL ${w.control}/10 (${w.badge})</div>
+          <div class="help-stick-body">${w.guideSummary}</div>
+          <div class="help-stick-tip">${w.guideTip}</div>
+        `;
+        grid.appendChild(item);
+      }
+    }
+
+    /**
+     * =========================================================================
+     * 14. INPUT HANDLING (MOUSE & TOUCH / RESPONSIVE RESIZING)
+     * =========================================================================
+     */
+    function getCanvasCoordinates(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = CANVAS_W / rect.width;
+      const scaleY = CANVAS_H / rect.height;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    }
+
+    function canHumanShoot() {
+      if (state.phase !== "AIMING" && state.phase !== "SIGHTING") return false;
+      if (state.mode === "ai" && state.currentPlayer === 2) return false;
+      return true;
+    }
+
+    function updateAimFromPointer(clientX, clientY) {
+      if (!canHumanShoot()) return;
+      const cueBall = getCueBall();
+      if (!cueBall || cueBall.pocketed) return;
+
+      const pt = getCanvasCoordinates(clientX, clientY);
+      const dx = pt.x - cueBall.x;
+      const dy = pt.y - cueBall.y;
+      if (Math.hypot(dx, dy) > 4) {
+        state.aimAngle = Math.atan2(dy, dx);
+      }
+    }
+
+    canvas.addEventListener("pointermove", (e) => {
+      updateAimFromPointer(e.clientX, e.clientY);
+    });
+
+    canvas.addEventListener("pointerdown", (e) => {
+      if (e.button !== undefined && e.button !== 0) return;
+      if (!canHumanShoot()) return;
+
+      sound.init();
+      canvas.setPointerCapture(e.pointerId);
+      updateAimFromPointer(e.clientX, e.clientY);
+
+      state.phase = "SIGHTING";
+      state.isSighting = true;
+      document.getElementById("controlsHint").style.opacity = "0";
+      updateHUD();
+    });
+
+    canvas.addEventListener("pointerup", () => {
+      if (!state.isSighting) return;
+      state.isSighting = false;
+      fireWeapon(state.aimAngle);
+    });
+
+    canvas.addEventListener("pointercancel", () => {
+      state.isSighting = false;
+      if (state.phase === "SIGHTING") state.phase = "AIMING";
+      updateHUD();
+    });
+
+    function resizeCanvas() {
+      const container = document.getElementById("canvasContainer");
+      const availW = container.clientWidth;
+      const availH = container.clientHeight;
+      const aspect = CANVAS_W / CANVAS_H;
+
+      let drawW = availW;
+      let drawH = drawW / aspect;
+
+      if (drawH > availH) {
+        drawH = availH;
+        drawW = drawH * aspect;
+      }
+
+      canvas.style.width = `${Math.floor(drawW)}px`;
+      canvas.style.height = `${Math.floor(drawH)}px`;
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+
+    // UI Button Listeners
+    document.getElementById("changeStickBtn").addEventListener("click", () => {
+      if (!canHumanShoot()) return;
+      state.isSighting = false;
+      state.phase = "AIMING";
+      renderWeaponModalList();
+      document.getElementById("stickModal").classList.add("open");
+    });
+
+    document.getElementById("closeStickModalBtn").addEventListener("click", () => {
+      document.getElementById("stickModal").classList.remove("open");
+    });
+
+    document.getElementById("stickModal").addEventListener("click", (e) => {
+      if (e.target.id === "stickModal") {
+        document.getElementById("stickModal").classList.remove("open");
+      }
+    });
+
+    // Stick Help / Field Guide Modal Listeners
+    document.getElementById("openStickHelpBtn").addEventListener("click", () => {
+      renderStickHelpGuide();
+      document.getElementById("stickHelpModal").classList.add("open");
+    });
+
+    document.getElementById("closeStickHelpBtn").addEventListener("click", () => {
+      document.getElementById("stickHelpModal").classList.remove("open");
+    });
+
+    document.getElementById("doneStickHelpBtn").addEventListener("click", () => {
+      document.getElementById("stickHelpModal").classList.remove("open");
+    });
+
+    document.getElementById("stickHelpModal").addEventListener("click", (e) => {
+      if (e.target.id === "stickHelpModal") {
+        document.getElementById("stickHelpModal").classList.remove("open");
+      }
+    });
+
+    document.getElementById("modeSelect").addEventListener("change", () => {
+      startNewMatch();
+    });
+
+    document.getElementById("resetRackBtn").addEventListener("click", () => {
+      startNewMatch();
+    });
+
+    document.getElementById("playAgainBtn").addEventListener("click", () => {
+      startNewMatch();
+    });
+
+    document.getElementById("soundToggleBtn").addEventListener("click", (e) => {
+      sound.enabled = !sound.enabled;
+      e.currentTarget.textContent = sound.enabled ? "🔊 Audio" : "🔇 Muted";
+    });
+
+    /**
+     * =========================================================================
+     * 15. MAIN ANIMATION LOOP
+     * =========================================================================
+     */
+    let lastTime = performance.now();
+
+    function gameLoop(now) {
+      const dt = Math.min(0.05, (now - lastTime) / 1000);
+      lastTime = now;
+
+      updateAI(dt);
+      updatePhysics(dt);
+      render();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Boot Game
+    resizeCanvas();
+    startNewMatch();
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
