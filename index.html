@@ -148,6 +148,58 @@
       font-weight: 700;
     }
 
+    /* Broadcast Session Series Tally Chip */
+    .session-record-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(13, 19, 26, 0.6);
+      border: 1px solid var(--border-subtle);
+      font-size: 0.72rem;
+      white-space: nowrap;
+      user-select: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .session-record-tag {
+      font-size: 0.64rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .session-record-score {
+      font-weight: 800;
+      color: var(--accent-gold);
+      background: #0d131a;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-size: 0.76rem;
+      letter-spacing: 0.02em;
+    }
+
+    @media (max-width: 480px) {
+      .hud-header {
+        padding: 6px 10px;
+        gap: 8px;
+        justify-content: center;
+      }
+      .scoreboard {
+        gap: 6px;
+        padding: 4px 8px;
+      }
+      .player-card {
+        padding: 3px 6px;
+        gap: 5px;
+      }
+      .session-record-badge {
+        padding: 2px 6px;
+      }
+    }
+
     /* Mode & Utility Controls */
     .hud-actions {
       display: flex;
@@ -843,6 +895,10 @@
         <span class="player-group-tag" id="p2Tag">Open</span>
         <span class="player-score" id="p2Score">0</span>
       </div>
+      <div class="session-record-badge" id="sessionRecordBadge" title="Current session match series tally">
+        <span class="session-record-tag" id="sessionRecordTag">SERIES</span>
+        <span class="session-record-score" id="sessionRecordScore">0W – 0L</span>
+      </div>
     </div>
 
     <div class="hud-actions">
@@ -1503,6 +1559,13 @@
      */
     const canvas = document.getElementById("poolCanvas");
     const ctx = canvas.getContext("2d");
+
+    // Running Session Tally (current page session only)
+    const sessionStats = {
+      ai: { p1Wins: 0, p2Wins: 0 },
+      hotseat: { p1Wins: 0, p2Wins: 0 },
+      practice: { cleared: 0 }
+    };
 
     const state = {
       mode: "ai",                  // 'practice' | 'ai' | 'hotseat'
@@ -2459,6 +2522,8 @@
       const p2 = state.players[2];
 
       if (state.mode === "practice") {
+        sessionStats.practice.cleared++;
+        updateHUD();
         headline.textContent = "Table Cleared!";
         subtext.textContent = `You cleared all 15 balls in ${p1.shots} shots using regulation firearms.`;
         table.innerHTML = `
@@ -2471,15 +2536,29 @@
             <tr><td>Balls Per Shot</td><td class="num">${(p1.score / Math.max(1, p1.shots)).toFixed(2)}</td></tr>
             <tr><td>Ballistic Scratches</td><td class="num">${p1.scratches}</td></tr>
             <tr><td>Favorite Stick</td><td class="num">${getFavoriteStickName(p1.weaponUsage)}</td></tr>
+            <tr><td>Session Clears</td><td class="num" style="color:var(--accent-gold);font-weight:800;">${sessionStats.practice.cleared} Rack${sessionStats.practice.cleared === 1 ? "" : "s"}</td></tr>
           </tbody>
         `;
       } else {
+        if (state.mode === "ai") {
+          if (winnerPlayerNum === 1) sessionStats.ai.p1Wins++;
+          else sessionStats.ai.p2Wins++;
+        } else if (state.mode === "hotseat") {
+          if (winnerPlayerNum === 1) sessionStats.hotseat.p1Wins++;
+          else sessionStats.hotseat.p2Wins++;
+        }
+        updateHUD();
+
         const winner = state.players[winnerPlayerNum];
         headline.textContent = `${winner.name} Wins!`;
         subtext.textContent = reasonText;
 
         const p1GroupLabel = p1.group ? p1.group.toUpperCase() : "OPEN";
         const p2GroupLabel = p2.group ? p2.group.toUpperCase() : "OPEN";
+
+        const seriesTallyText = state.mode === "ai"
+          ? `Player 1: ${sessionStats.ai.p1Wins}W — Computer: ${sessionStats.ai.p2Wins}W`
+          : `Player 1: ${sessionStats.hotseat.p1Wins}W — Player 2: ${sessionStats.hotseat.p2Wins}W`;
 
         table.innerHTML = `
           <thead>
@@ -2509,6 +2588,10 @@
               <td>Favorite Stick</td>
               <td class="num">${getFavoriteStickName(p1.weaponUsage)}</td>
               <td class="num">${getFavoriteStickName(p2.weaponUsage)}</td>
+            </tr>
+            <tr>
+              <td>Session Series Record</td>
+              <td class="num" colspan="2" style="color:var(--accent-gold);text-align:center;font-weight:800;">${seriesTallyText}</td>
             </tr>
           </tbody>
         `;
@@ -3266,6 +3349,27 @@
 
         p1Card.classList.toggle("active", state.currentPlayer === 1);
         p2Card.classList.toggle("active", state.currentPlayer === 2);
+      }
+
+      // Update session running series record chip
+      const recordTag = document.getElementById("sessionRecordTag");
+      const recordScore = document.getElementById("sessionRecordScore");
+      const recordBadge = document.getElementById("sessionRecordBadge");
+
+      if (recordTag && recordScore && recordBadge) {
+        if (state.mode === "practice") {
+          recordTag.textContent = "CLEARS";
+          recordScore.textContent = `${sessionStats.practice.cleared}`;
+          recordBadge.title = `Current session: ${sessionStats.practice.cleared} table(s) cleared`;
+        } else if (state.mode === "ai") {
+          recordTag.textContent = "SERIES";
+          recordScore.textContent = `${sessionStats.ai.p1Wins}W – ${sessionStats.ai.p2Wins}L`;
+          recordBadge.title = `Current session series vs Computer: ${sessionStats.ai.p1Wins} Win(s), ${sessionStats.ai.p2Wins} Loss(es)`;
+        } else {
+          recordTag.textContent = "SERIES";
+          recordScore.textContent = `P1 ${sessionStats.hotseat.p1Wins} – ${sessionStats.hotseat.p2Wins} P2`;
+          recordBadge.title = `Current session series: Player 1 (${sessionStats.hotseat.p1Wins}) vs Player 2 (${sessionStats.hotseat.p2Wins})`;
+        }
       }
     }
 
