@@ -13,4 +13,4 @@ Choose a firearm, line up your shot, and attempt to prove that cue sticks were n
 
 ## License
 
-MIT License © 2026 None Yet Studios
+MIT License © 2026 Anthony Moore / None Yet Studios
